@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { v2 as cloudinary } from "cloudinary";
 
 // Helper function to create JWT token
 const createToken = (userId) => {
@@ -27,8 +28,10 @@ export const register = async (req, res) => {
       success: true,
       token,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -77,8 +80,10 @@ export const login = async (req, res) => {
       success: true,
       token,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -126,6 +131,81 @@ export const protect = async (req, res, next) => {
     res.status(401).json({
       success: false,
       message: "Not authorized, token failed",
+    });
+  }
+};
+
+// 4. Get current user profile
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user profile",
+    });
+  }
+};
+
+//5. Update user profile (with photo upload)
+export const updateProfile = async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+
+    // Handle file upload if exists
+    if (req.file) {
+      // Delete old avatar if exists
+      if (req.user.avatar) {
+        const publicId = req.user.avatar.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`stock-genius/users/${publicId}`);
+      }
+
+      updateData.avatar = req.file.path; // Cloudinary URL
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Profile update error:", error); // Log the full error object
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update profile",
+    });
+  }
+};
+
+//6. Delete user account (with avatar cleanup)
+export const deleteUser = async (req, res) => {
+  try {
+    // Delete avatar from Cloudinary if exists
+    if (req.user.avatar) {
+      const publicId = req.user.avatar.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(`stock-genius/users/${publicId}`);
+    }
+
+    await User.findByIdAndDelete(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully!",
+    });
+  } catch (error) {
+    console.error("Delete account error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete account",
     });
   }
 };
