@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const validator = require("validator");
+import { Schema, model } from "mongoose";
+import { hash, compare } from "bcryptjs";
+import validator from "validator";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   name: {
     type: "String",
     required: [true, "Please enter your name."],
@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
     type: "String",
     required: [true, "Please provide your password."],
     minlength: [8, "Length should be greater than 8 characters!"],
+    select: false,
   },
   passwordChangedAt: Date,
   createdAt: {
@@ -30,15 +31,15 @@ const userSchema = new mongoose.Schema({
 // MIDDLEWARE: Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = await hash(this.password, 12);
   next();
 });
 
-// INSTANCE METHOD: Check password correctness
-userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword);
+// INSTANCE METHOD: a custom method that can be defined on a schema and can call on individual documents (instances) of a model.
+// Here it is used to Check password correctness
+userSchema.methods.correctPassword = async function (enteredPassword, userDbPassword) {
+  return await compare(enteredPassword, userDbPassword);
 };
 
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+const User = model("User", userSchema);
+export default User;
