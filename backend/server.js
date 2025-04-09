@@ -6,6 +6,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import authRouter from "./routes/authRoutes.js";
+import stockRouter from "./routes/stockRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/stocks", stockRouter);
 
 // Connect to the database
 connectDB();
