@@ -7,6 +7,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import authRouter from "./routes/authRoutes.js";
 import stockRouter from "./routes/stockRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/stocks", stockRouter);
+app.use("/api/ai", aiRoutes);
 
 // Connect to the database
 connectDB();
