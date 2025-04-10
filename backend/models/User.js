@@ -26,11 +26,14 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    watchlist: [
+      {
+        symbol: String,
+        name: String,
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
     passwordChangedAt: Date,
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );
@@ -45,15 +48,6 @@ userSchema.pre("save", async function (next) {
 // Password comparison method
 userSchema.methods.correctPassword = async function (candidatePassword) {
   return await compare(candidatePassword, this.password);
-};
-
-// Check if password was changed after token was issued
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
-  if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
-    return JWTTimestamp < changedTimestamp;
-  }
-  return false;
 };
 
 export default model("User", userSchema);
