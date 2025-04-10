@@ -1,11 +1,11 @@
-export const generateFullAnalysisPrompt = (stockInfo, marketData) => `
+export const generateFullAnalysisPrompt = (stockInfo) => `
 You are a stock market AI analyst specializing in concise, actionable insights. Provide a focused analysis for ${
   stockInfo.symbol
 } using this exact format:
 
 --- START ANALYSIS FORMAT ---
 
-**Current Status**: ${stockInfo.price} (${stockInfo.changePercent})
+**Current Status**: ${stockInfo.symbol}, ${stockInfo.price}, (${stockInfo.changePercent})
 
 1. 🔍 **Key Metrics**
 - Sector/Industry: ${stockInfo.sector}/${stockInfo.industry}

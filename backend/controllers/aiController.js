@@ -61,15 +61,10 @@ export const getAISuggestion = async (req, res) => {
           rsi: rsi?.["Technical Analysis: RSI"] || {},
         };
 
-        const marketData = {
-          daily: Object.entries(daily["Time Series (Daily)"]).slice(0, 1),
-          intraday: Object.entries(intraday["Time Series (5min)"]).slice(0, 5),
-        };
-
         // Try full analysis with retries
         while (retryCount < maxRetries) {
           try {
-            const prompt = generateFullAnalysisPrompt(stockInfo, marketData);
+            const prompt = generateFullAnalysisPrompt(stockInfo);
             const result = await geminiClient.generateContent(prompt);
             const suggestion = await result.response.text();
 
