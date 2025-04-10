@@ -209,3 +209,31 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+
+// 7. Password Reset
+export const resetPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select("+password");
+
+    if (!(await user.correctPassword(currentPassword, user.password))) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update password",
+    });
+  }
+};
