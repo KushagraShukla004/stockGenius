@@ -9,6 +9,7 @@ import {
   fetchGlobalQuote,
   searchSymbol,
 } from "../utils/alphaVantage.js";
+import { broadcastPriceUpdate } from "../utils/webSocket.js";
 
 // GET /api/stocks
 export const getAllStocks = async (req, res) => {
@@ -102,21 +103,47 @@ export const getCandlestickData = async (req, res) => {
 export const getStockPriceData = async (req, res) => {
   const { symbol } = req.params;
   const cacheKey = `price-${symbol}`;
+  const upperSymbol = symbol.toUpperCase();
 
   try {
+    // cached data checking
     const cached = await getCache(cacheKey);
-    if (cached) return res.status(200).json({ fromCache: true, ...cached });
+    if (cached) {
+      return res.status(200).json({
+        success: true,
+        fromCache: true,
+        webSocketBroadcasted: false,
+        data: cached,
+      });
+    }
 
-    const data = await fetchGlobalQuote(symbol);
-    const result = {
-      symbol,
-      price: data["Global Quote"]?.["05. price"],
-      change: data["Global Quote"]?.["10. change percent"],
+    // Fetch fresh data if no cache
+    const data = await fetchGlobalQuote(upperSymbol);
+    const stockData = {
+      symbol: upperSymbol,
+      price: data["Global Quote"]["05. price"],
+      change: data["Global Quote"]["10. change percent"],
+      volume: data["Global Quote"]["06. volume"],
     };
 
-    await setCache(cacheKey, result, 300); // cache for 5 mins
-    res.status(200).json({ fromCache: false, ...result });
+    // Update cache
+    await setCache(cacheKey, stockData, 300); // Cache for 5 minutes
+
+    // Broadcast real-time update
+    broadcastPriceUpdate(upperSymbol, stockData);
+
+    // response
+    res.status(200).json({
+      success: true,
+      fromCache: false,
+      webSocketBroadcasted: true,
+      data: stockData,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch stock price data." });
+    console.error("Error in getStockPriceData:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch stock data",
+    });
   }
 };
