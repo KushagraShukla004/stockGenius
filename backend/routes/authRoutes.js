@@ -7,6 +7,7 @@ import {
   updateProfile,
   deleteUser,
   resetPassword,
+  logout, // Add this line
 } from "../controllers/authController.js";
 import { uploadUserPhoto } from "../utils/upload.js";
 
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/logout", protect, logout);
 // protected route with token
 router.get("/me", protect, getMe);
 router.patch("/update-profile", protect, uploadUserPhoto, updateProfile);
