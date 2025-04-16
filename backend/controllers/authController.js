@@ -239,18 +239,18 @@ export const resetPassword = async (req, res) => {
 };
 
 // 8. Logout User
-export const logout = async (req, res) => {
-  try {
-    // Clear user's token from client side
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to logout",
-    });
-  }
-};
+// export const logout = async (req, res) => {
+//   try {
+//     // Clear user's token from client side
+//     res.status(200).json({
+//       success: true,
+//       message: "Logged out successfully",
+//     });
+//   } catch (error) {
+//     console.error("Logout error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to logout",
+//     });
+//   }
+// };
