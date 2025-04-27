@@ -8,6 +8,7 @@ import {
   getFundamentals,
   fetchGlobalQuote,
   searchSymbol,
+  getIntradayCandlesticks,
 } from "../utils/alphaVantage.js";
 import { broadcastPriceUpdate } from "../utils/webSocket.js";
 
@@ -83,22 +84,74 @@ export const getLiveStockData = async (req, res) => {
 };
 
 // GET /api/stocks/:symbol/candles
+// export const getCandlestickData = async (req, res) => {
+//   const { symbol } = req.params;
+//   const cacheKey = `stock:candles:${symbol}`;
+
+//   try {
+//     const cached = await getCache(cacheKey);
+//     if (cached) return res.json(cached);
+
+//     const raw = await getDailyCandlesticks(symbol);
+//     const timeSeries = raw["Time Series (Daily)"];
+//     const transformed = Object.entries(timeSeries).map(([date, values]) => ({
+//       date,
+//       open: parseFloat(values["1. open"]),
+//       high: parseFloat(values["2. high"]),
+//       low: parseFloat(values["3. low"]),
+//       close: parseFloat(values["4. close"]),
+//       volume: parseInt(values["5. volume"]),
+//     }));
+
+//     await setCache(cacheKey, transformed, 3600); // cache for 1 hour
+//     res.json(transformed);
+//   } catch (err) {
+//     res.status(500).json({ error: "Failed to fetch candlestick data." });
+//   }
+// };
 export const getCandlestickData = async (req, res) => {
   const { symbol } = req.params;
-  const cacheKey = `stock:candles:${symbol}`;
+  const { interval = "1D" } = req.query; // default is 1D
+  const upperSymbol = symbol.toUpperCase();
+
+  const cacheKey = `stock:candles:${upperSymbol}:${interval}`;
 
   try {
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const candles = await getDailyCandlesticks(symbol);
-    await setCache(cacheKey, candles, 3600); // cache for 1 hour
-    res.json(candles);
+    let raw, timeSeries;
+
+    if (interval === "1D") {
+      raw = await getDailyCandlesticks(upperSymbol);
+      timeSeries = raw["Time Series (Daily)"];
+    } else {
+      raw = await getIntradayCandlesticks(upperSymbol, interval);
+      timeSeries = raw[`Time Series (${interval})`];
+    }
+
+    if (!timeSeries) {
+      return res
+        .status(404)
+        .json({ error: "Data not available. Try again later or check interval." });
+    }
+
+    const transformed = Object.entries(timeSeries).map(([date, values]) => ({
+      date,
+      open: parseFloat(values["1. open"]),
+      high: parseFloat(values["2. high"]),
+      low: parseFloat(values["3. low"]),
+      close: parseFloat(values["4. close"]),
+      volume: parseInt(values["5. volume"]),
+    }));
+
+    await setCache(cacheKey, transformed, 300); // cache for 5 min
+    res.json(transformed);
   } catch (err) {
+    console.error("Error fetching candlesticks:", err.message);
     res.status(500).json({ error: "Failed to fetch candlestick data." });
   }
 };
-
 // Get current price with caching
 export const getStockPriceData = async (req, res) => {
   const { symbol } = req.params;

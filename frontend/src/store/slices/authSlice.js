@@ -1,15 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-// base url
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import api from "@/services/api";
 
 // Async thunk for registering a new user
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async ({ name, email, password }, thunkAPI) => {
     try {
-      const response = await axios.post(`${BASE_URL}/auth/register`, {
+      const response = await api.post("/auth/register", {
         name,
         email,
         password,
@@ -28,7 +25,7 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, thunkAPI) => {
     try {
-      const response = await axios.post(`${BASE_URL}/auth/login`, { email, password });
+      const response = await api.post("/auth/login", { email, password });
       // Add 'Bearer ' prefix when saving token
       localStorage.setItem("token", `Bearer ${response.data.token}`);
       return response.data;

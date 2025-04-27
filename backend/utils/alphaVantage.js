@@ -29,6 +29,13 @@ export const getDailyCandlesticks = async (symbol) => {
   return data;
 };
 
+export const getIntradayCandlesticks = async (symbol, interval = "5min") => {
+  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${process.env.ALPHA_API_KEY}&outputsize=compact`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
+};
+
 // Get simple moving average (SMA)
 export const getSMA = async (symbol, timePeriod = 20) => {
   const { data } = await axios.get(BASE_URL, {

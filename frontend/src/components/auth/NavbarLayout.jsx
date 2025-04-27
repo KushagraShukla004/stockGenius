@@ -4,11 +4,12 @@ import Navbar from "./Navbar";
 
 const NavbarLayout = () => {
   return (
-    <div>
-      {/* Navbar is rendered!*/}
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      {/* Render child routes(routes inside <Routes>...</Routes>) */}
-      <Outlet />
+      <main>
+        {/* adjust if your navbar height is different */}
+        <Outlet />
+      </main>
     </div>
   );
 };

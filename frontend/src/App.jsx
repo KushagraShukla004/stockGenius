@@ -7,10 +7,9 @@ import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/ProfilePage";
 import NavbarLayout from "./components/auth/NavbarLayout";
-import Watchlist from "./pages/Watchlist";
 
 export default function App() {
-  const { token } = useSelector((state) => state.auth); // Get token from Redux state
+  const { token } = useSelector((state) => state.auth);
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
@@ -21,7 +20,6 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/watchlist" element={<Watchlist />} />
           </Route>
         </Route>
 
