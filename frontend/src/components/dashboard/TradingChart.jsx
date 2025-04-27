@@ -90,12 +90,13 @@ const TradingChart = ({ symbol, interval = "1D" }) => {
     resizeObserverRef.current = new ResizeObserver(() => {
       handleResize();
     });
-    resizeObserverRef.current.observe(chartContainerRef.current);
+    const containerElement = chartContainerRef.current;
+    resizeObserverRef.current.observe(containerElement);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (resizeObserverRef.current && chartContainerRef.current) {
-        resizeObserverRef.current.unobserve(chartContainerRef.current);
+      if (resizeObserverRef.current && containerElement) {
+        resizeObserverRef.current.unobserve(containerElement);
       }
       chart.remove();
     };
