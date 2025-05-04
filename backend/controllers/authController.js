@@ -3,8 +3,8 @@ import User from "../models/User.js";
 import { v2 as cloudinary } from "cloudinary";
 
 // Helper function to create JWT token
-const createToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+const createToken = (user) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
@@ -22,7 +22,7 @@ export const register = async (req, res) => {
     }
     const user = await User.create({ name, email, password });
 
-    const token = createToken(user._id);
+    const token = createToken(user);
 
     res.status(201).json({
       success: true,
@@ -32,6 +32,7 @@ export const register = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -74,7 +75,7 @@ export const login = async (req, res) => {
     }
 
     // Generate token
-    const token = createToken(user._id);
+    const token = createToken(user);
 
     res.status(200).json({
       success: true,
@@ -84,6 +85,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -95,47 +97,7 @@ export const login = async (req, res) => {
   }
 };
 
-// 3. Protect routes - check if user is logged in
-export const protect = async (req, res, next) => {
-  try {
-    // Get token from header
-    // headers.authorization: Bearer ${token} so split(" ") then it returns array of
-    // ['Bearer','${token}']
-    // hence, [1] returns ${token}
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized, no token",
-      });
-    }
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if user still exists
-    // decoded.userId because in createToken(userId) we have userId as argument and jwt.sign({ userId }
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Attach user to request object
-    req.user = user;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "Not authorized, token failed",
-    });
-  }
-};
-
-// 4. Get current user profile
+// 3. Get current user profile
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -152,7 +114,7 @@ export const getMe = async (req, res) => {
   }
 };
 
-//5. Update user profile (with photo upload)
+//4. Update user profile (with photo upload)
 export const updateProfile = async (req, res) => {
   try {
     const updateData = { ...req.body };
@@ -186,8 +148,8 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-//6. Delete user account (with avatar cleanup)
-export const deleteUser = async (req, res) => {
+//5. Delete user account (with avatar cleanup)
+export const deleteUserAccount = async (req, res) => {
   try {
     // Delete avatar from Cloudinary if exists
     if (req.user.avatar) {
@@ -210,7 +172,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// 7. Password Reset
+// 6. Password Reset
 export const resetPassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -237,20 +199,3 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
-
-// 8. Logout User
-// export const logout = async (req, res) => {
-//   try {
-//     // Clear user's token from client side
-//     res.status(200).json({
-//       success: true,
-//       message: "Logged out successfully",
-//     });
-//   } catch (error) {
-//     console.error("Logout error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to logout",
-//     });
-//   }
-// };

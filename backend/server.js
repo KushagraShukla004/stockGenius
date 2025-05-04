@@ -6,22 +6,17 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import authRouter from "./routes/authRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 import stockRouter from "./routes/stockRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
-import { createServer } from "http";
-import { initWebSocket } from "./utils/webSocket.js";
 const app = express();
-const server = createServer(app); // Create HTTP server
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
 // Parse JSON request bodies (e.g., for POST/PUT requests)
 app.use(json());
-
-// Initialize WebSocket
-initWebSocket(server);
 
 // Log HTTP requests in development
 if (process.env.NODE_ENV === "development") {
@@ -38,6 +33,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/stocks", stockRouter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/watchlist", watchlistRoutes);

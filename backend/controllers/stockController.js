@@ -10,7 +10,7 @@ import {
   searchSymbol,
   getIntradayCandlesticks,
 } from "../utils/alphaVantage.js";
-import { broadcastPriceUpdate } from "../utils/webSocket.js";
+// import { broadcastPriceUpdate } from "../utils/webSocket.js";
 
 // GET /api/stocks
 export const getAllStocks = async (req, res) => {
@@ -165,7 +165,7 @@ export const getStockPriceData = async (req, res) => {
       return res.status(200).json({
         success: true,
         fromCache: true,
-        webSocketBroadcasted: false,
+        // webSocketBroadcasted: false,
         data: cached,
       });
     }
@@ -183,13 +183,13 @@ export const getStockPriceData = async (req, res) => {
     await setCache(cacheKey, stockData, 300); // Cache for 5 minutes
 
     // Broadcast real-time update
-    broadcastPriceUpdate(upperSymbol, stockData);
+    // broadcastPriceUpdate(upperSymbol, stockData);
 
     // response
     res.status(200).json({
       success: true,
       fromCache: false,
-      webSocketBroadcasted: true,
+      // webSocketBroadcasted: true,
       data: stockData,
     });
   } catch (err) {

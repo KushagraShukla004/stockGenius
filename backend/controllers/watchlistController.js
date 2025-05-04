@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import { broadcastWatchlistUpdate } from "../utils/webSocket.js";
+// import { broadcastWatchlistUpdate } from "../utils/webSocket.js";
 
 export const getWatchlist = async (req, res) => {
   try {
@@ -32,7 +32,7 @@ export const toggleWatchlist = async (req, res) => {
     await user.save();
 
     //webSocket broadcast
-    broadcastWatchlistUpdate(req.user.id, user.watchlist);
+    // broadcastWatchlistUpdate(req.user.id, user.watchlist);
 
     res.json({
       success: true,
