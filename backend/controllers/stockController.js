@@ -10,7 +10,6 @@ import {
   searchSymbol,
   getIntradayCandlesticks,
 } from "../utils/alphaVantage.js";
-// import { broadcastPriceUpdate } from "../utils/webSocket.js";
 
 // GET /api/stocks
 export const getAllStocks = async (req, res) => {

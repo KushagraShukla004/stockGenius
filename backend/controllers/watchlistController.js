@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-// import { broadcastWatchlistUpdate } from "../utils/webSocket.js";
 
 export const getWatchlist = async (req, res) => {
   try {
