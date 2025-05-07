@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createChart, CrosshairMode, CandlestickSeries } from "lightweight-charts";
 import Loader from "../ui/Loader";
-// import useFinnhubWebSocket from "@/hooks/useFinnhubWebSocket";
 
 const TradingChart = ({ symbol, interval = "1min" }) => {
   const chartContainerRef = useRef(null);
@@ -12,62 +11,79 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // const handleWebSocketData = useCallback((newCandle) => {
-  //   setData((prev) => {
-  //     const lastCandle = prev[prev.length - 1];
-  //     if (lastCandle && lastCandle.time === newCandle.time) {
-  //       return [
-  //         ...prev.slice(0, -1),
-  //         {
-  //           ...lastCandle,
-  //           high: Math.max(lastCandle.high, newCandle.high),
-  //           low: Math.min(lastCandle.low, newCandle.low),
-  //           close: newCandle.close,
-  //         },
-  //       ];
-  //     } else {
-  //       return [...prev, newCandle];
-  //     }
-  //   });
-  // }, []);
+  const fetchYahooData = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/yahoo/${symbol}?interval=1m&range=1d`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  
+      const json = await res.json();
+      
+      if (json.error) {
+        throw new Error(json.error);
+      }
+      
+      const timestamps = json.timestamp;
+      const ohlc = json.indicators.quote[0];
+      
+      return timestamps.map((t, i) => ({
+        time: t,
+        open: ohlc.open[i],
+        high: ohlc.high[i],
+        low: ohlc.low[i],
+        close: ohlc.close[i],
+      })).filter(c => c.open && c.high && c.low && c.close);
+    } catch (err) {
+      console.error("Failed to fetch Yahoo data", err);
+      throw err;
+    }
+  }, [symbol]);
 
-  // Use the custom hook
-  // useFinnhubWebSocket(symbol, handleWebSocketData);
+  const fetchAlphaVantageData = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/stocks/${symbol}/candles?interval=${interval}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const raw = await res.json();
+      if (!Array.isArray(raw)) throw new Error("Invalid data format");
+
+      return raw.map((item) => ({
+        time: Math.floor(new Date(item.date).getTime() / 1000),
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close,
+      }));
+    } catch (err) {
+      console.error("Failed to fetch Alpha Vantage data", err);
+      throw err;
+    }
+  }, [symbol, interval]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!symbol) return;
-
+    const loadData = async () => {
       setLoading(true);
       setError(null);
-
+      
       try {
-        const res = await fetch(`/api/stocks/${symbol}/candles?interval=${interval}`);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-        const raw = await res.json();
-        if (!Array.isArray(raw)) throw new Error("Invalid data format");
-
-        const formatted = raw.map((item) => ({
-          time: Math.floor(new Date(item.date).getTime() / 1000),
-          open: item.open,
-          high: item.high,
-          low: item.low,
-          close: item.close,
-        }));
-
-        formatted.sort((a, b) => a.time - b.time);
-        setData(formatted);
+        const candles = interval === "1min" 
+          ? await fetchYahooData()
+          : await fetchAlphaVantageData();
+          
+        candles.sort((a, b) => a.time - b.time);
+        setData(candles);
       } catch (err) {
-        console.error("Failed to fetch candlestick data", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [symbol, interval]);
+    loadData();
+    if (interval === "1min") {
+      const intervalId = setInterval(loadData, 60000);
+      return () => clearInterval(intervalId);
+    }
+  }, [symbol, interval, fetchYahooData, fetchAlphaVantageData]);
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return;

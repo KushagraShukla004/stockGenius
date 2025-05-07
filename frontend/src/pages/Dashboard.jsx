@@ -1,233 +1,259 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FaSearch, FaStar, FaChartLine } from "react-icons/fa";
+import { motion, AnimatePresence } from "motion/react";
+import { FaChartLine, FaRobot } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import StocksTable from "@/components/dashboard/StocksTable";
 import TradingChart from "@/components/dashboard/TradingChart";
 import { getWatchlist, toggleWatchlist } from "@/store/slices/watchlistSlice";
 import { getAIAnalysis } from "@/store/slices/aiSlice";
 import { getAllStocks } from "@/store/slices/stockSlice";
 import Modal from "@/components/ui/Modal";
 import Loader from "@/components/ui/Loader";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const { watchlist, loading: watchlistLoading } = useSelector(
     (state) => state.watchlist
   );
-  const { stocks, loading: stocksLoading } = useSelector((state) => state.stocks);
+  const {
+    stocks,
+    loading: stocksLoading,
+    totalStocks,
+    totalPages,
+    currentPage,
+  } = useSelector((state) => state.stocks);
+
   const { analysis, loading: analysisLoading } = useSelector((state) => state.ai);
 
-  const [symbol, setSymbol] = useState("AAPL");
-  const [interval, setInterval] = useState("1min");
-  const [showAllStocks, setShowAllStocks] = useState(false);
+  const [selectedStock, setSelectedStock] = useState(null);
+  const [showChartModal, setShowChartModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-
-  const intervals = ["1min", "5min", "15min", "1D"];
+  const [interval, setInterval] = useState("1min");
 
   useEffect(() => {
     dispatch(getWatchlist());
     dispatch(getAllStocks());
   }, [dispatch]);
 
-  const handleAIAnalysis = async () => {
-    // Open the modal immediately
-    setShowAnalysisModal(true);
-
-    // Fetch the analysis
-    await dispatch(getAIAnalysis(symbol));
-  };
+  // Extract unique sectors and industries from stocks (DSA Knowledge)
+  // creating Array of (by using [])
+  // unique (by using Set data structure (Set appends unique values to the array))
+  // adding new unique elements instead of overriding by using spread operator(...)
+  const sectors = [...new Set(stocks.map((stock) => stock.sector))]
+    .filter(Boolean)
+    .sort();
+  const industries = [...new Set(stocks.map((stock) => stock.industry))]
+    .filter(Boolean)
+    .sort();
 
   const handleStockSelect = (stock) => {
-    setSymbol(stock.symbol);
-    setShowAllStocks(false);
+    if (!stock) {
+      toast.error("Please select a valid stock");
+      return;
+    }
+    setSelectedStock(stock);
+    toast.success(`Selected ${stock.symbol}`);
+  };
+
+  const handleShowChart = () => {
+    if (!selectedStock) {
+      toast.error("Please select a stock to view chart");
+      return;
+    }
+    setShowChartModal(true);
+  };
+
+  const handleAIAnalysis = async () => {
+    if (!selectedStock) {
+      toast.error("Please select a stock for AI analysis");
+      return;
+    }
+    setShowAnalysisModal(true);
+
+    try {
+      await dispatch(getAIAnalysis(selectedStock.symbol));
+      toast.success(`Analysis loaded for ${selectedStock.symbol}`);
+    } catch (error) {
+      toast.error(`Failed to load analysis: ${error.message}`);
+    }
   };
 
   const handleWatchlistToggle = async (stock) => {
-    await dispatch(toggleWatchlist({ symbol: stock.symbol, name: stock.name }));
-    dispatch(getWatchlist());
+    try {
+      await dispatch(toggleWatchlist({ symbol: stock.symbol, name: stock.name }));
+      dispatch(getWatchlist());
+      toast.success(
+        isStockInWatchlist(stock.symbol)
+          ? `Removed ${stock.symbol} from watchlist`
+          : `Added ${stock.symbol} to watchlist`
+      );
+    } catch (error) {
+      toast.error(`Failed to update watchlist: ${error.message}`);
+    }
   };
 
-  const isStockInWatchlist = (stockSymbol) => {
-    return watchlist.some((stk) => stk.symbol === stockSymbol);
+  const isStockInWatchlist = (symbol) => {
+    return watchlist.some((stock) => stock.symbol === symbol);
   };
+
+  const intervals = ["1min", "5min", "15min", "1D"];
 
   return (
-    <div className="h-[calc(100vh-64px)] w-full flex flex-col md:flex-row bg-background text-foreground overflow-hidden">
-      {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        {/* Chart Section */}
-        <div
-          className={`flex-1 h-[calc(100%-9rem)] p-4 relative transition-all duration-300`}
-        >
-          {/* Interval Selector */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex gap-1 overflow-x-auto scrollbar-none">
-              {intervals.map((i) => (
-                <button
-                  key={i}
-                  onClick={() => setInterval(i)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                    i === interval
-                      ? "bg-primary text-primary-fg"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
-                >
-                  {i}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={handleAIAnalysis}
-              className="ml-auto shrink-0 bg-primary/90 hover:bg-primary text-primary-fg px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
-            >
-              AI Analysis
-            </button>
-          </div>
-
-          {/* Chart Container */}
-          <div className="h-[calc(100%-3rem)]">
-            <TradingChart symbol={symbol} interval={interval} />
-          </div>
-        </div>
-      </div>
-
-      {/* Watchlist Sidebar */}
-      <aside className="w-full max-md:h-[40%] md:w-80 shrink-0 bg-card border-l border-border overflow-hidden flex flex-col md:flex">
-        {/* Watchlist Header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Watchlist</h2>
-            <button
-              onClick={() => setShowAllStocks(!showAllStocks)}
-              className="text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              {showAllStocks ? "Hide" : "All Stocks"}
-            </button>
-          </div>
+    <div className="h-[calc(100vh-64px)] overflow-hidden bg-background">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="h-full p-4 flex flex-col"
+      >
+        {/* Stocks Table with integrated action buttons */}
+        <div className="flex-1 p-4 max-h-fit bg-white/30 rounded-xl shadow-lg overflow-hidden">
+          <StocksTable
+            data={stocks}
+            loading={stocksLoading}
+            totalStocks={totalStocks}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            sectors={sectors}
+            industries={industries}
+            onStockSelect={handleStockSelect}
+            onWatchlistToggle={handleWatchlistToggle}
+            isStockInWatchlist={isStockInWatchlist}
+            selectedStock={selectedStock}
+            // Action Buttons for Chart and AI Analysis
+            onShowChart={handleShowChart}
+            onShowAnalysis={handleAIAnalysis}
+          />
         </div>
 
-        {/* Watchlist Content */}
-        <div className="flex-1 overflow-hidden">
-          {showAllStocks ? (
-            <div className="flex flex-col h-full">
-              <div className="p-4 pb-2">
-                <input
-                  type="text"
-                  placeholder="Search stocks..."
-                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-              <div className="flex-1 overflow-y-auto px-4">
-                {stocksLoading ? (
-                  <div className="flex items-center justify-center">
-                    <Loader />
+        {/* Modals */}
+        {/* Chart Modal - Full width */}
+        <AnimatePresence>
+          {showChartModal && (
+            <Modal
+              isOpen={showChartModal}
+              onClose={() => setShowChartModal(false)}
+              className="w-[95vw] h-[90vh] max-w-none m-4" // Override default width
+            >
+              <div className="h-full flex flex-col">
+                {/* Header with Controls */}
+                <div className="flex items-center justify-between p-4 border-b">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-xl font-semibold">
+                      {selectedStock?.symbol} Chart
+                    </h3>
+                    <div className="flex gap-1 overflow-x-auto scrollbar-none">
+                      {intervals.map((i) => (
+                        <Button
+                          key={i}
+                          variant={i === interval ? "default" : "outline"}
+                          onClick={() => setInterval(i)}
+                          size="sm"
+                        >
+                          {i}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <ul className="space-y-1 py-2">
-                    {stocks.map((stock) => (
-                      <li
-                        key={stock.symbol}
-                        className={`group px-3 py-2 rounded-md cursor-pointer flex items-center justify-between transition-colors ${
-                          stock.symbol === symbol
-                            ? "bg-primary/50 font-medium"
-                            : "hover:bg-muted/30"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2 w-full">
-                          <span
-                            onClick={() => handleStockSelect(stock)}
-                            className="text-sm font-medium w-16 shrink-0"
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleAIAnalysis}
+                      className="flex items-center gap-2"
+                    >
+                      <FaRobot /> AI Analysis
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 flex min-h-0">
+                  {/* Chart Section */}
+                  <div className="flex-1 min-w-0 p-4">
+                    <div className="h-full">
+                      <TradingChart symbol={selectedStock?.symbol} interval={interval} />
+                    </div>
+                  </div>
+
+                  {/* Watchlist Sidebar */}
+                  <div className="w-80 border-l bg-muted/10 p-4 overflow-y-auto">
+                    <h3 className="text-lg font-semibold mb-4">Watchlist</h3>
+                    {watchlistLoading ? (
+                      <div className="flex justify-center">
+                        <Loader />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {watchlist.map((stock) => (
+                          <div
+                            key={stock.symbol}
+                            className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                              selectedStock?.symbol === stock.symbol
+                                ? "bg-primary/10"
+                                : "hover:bg-muted/50"
+                            }`}
+                            onClick={() => setSelectedStock(stock)}
                           >
-                            {stock.symbol}
-                          </span>
-                          <span
-                            onClick={() => handleStockSelect(stock)}
-                            className="text-sm text-muted-fg truncate flex-1"
-                          >
-                            {stock.name}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleWatchlistToggle(stock);
-                            }}
-                            className={`${
-                              isStockInWatchlist(stock.symbol)
-                                ? "text-yellow-400"
-                                : "text-muted-fg"
-                            } hover:text-yellow-500 shrink-0 opacity-100 transition-colors`}
-                          >
-                            <FaStar className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                            <div>
+                              <div className="font-medium">{stock.symbol}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {stock.name}
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleWatchlistToggle(stock);
+                              }}
+                            >
+                              <FaChartLine className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="h-full overflow-y-auto p-4">
-              {watchlistLoading ? (
-                <div className="flex items-center justify-center">
+            </Modal>
+          )}
+        </AnimatePresence>
+
+        {/* AI Analysis Modal - Default width */}
+        <AnimatePresence>
+          {showAnalysisModal && (
+            <Modal isOpen={showAnalysisModal} onClose={() => setShowAnalysisModal(false)}>
+              <h3 className="text-lg font-semibold mb-4">
+                AI Analysis for {selectedStock?.symbol}
+              </h3>
+              {analysisLoading ? (
+                <div className="flex justify-center">
                   <Loader />
                 </div>
+              ) : analysis?.suggestion ? (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: (typeof analysis.suggestion === "string"
+                      ? analysis.suggestion
+                      : analysis.suggestion.suggestion
+                    )
+                      .replace(/--- START ANALYSIS FORMAT ---\n?/g, "")
+                      .replace(/--- END FORMAT ---\n?/g, "")
+                      .replace(/\n/g, "<br/>")
+                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                  }}
+                />
               ) : (
-                <ul className="space-y-2">
-                  {watchlist.map((stk) => (
-                    <li
-                      key={stk.symbol}
-                      className={`group px-3 py-2 rounded-md cursor-pointer flex items-center justify-between transition-colors ${
-                        stk.symbol === symbol
-                          ? "bg-muted/50 font-medium"
-                          : "hover:bg-muted/30"
-                      }`}
-                      onClick={() => handleStockSelect(stk)}
-                    >
-                      <span>{stk.symbol}</span>
-                      <span>{stk.name}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleWatchlistToggle(stk);
-                        }}
-                        className="text-yellow-400 hover:text-yellow-500"
-                      >
-                        <FaStar className="h-4 w-4" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="text-muted-foreground">No analysis data available</div>
               )}
-            </div>
+            </Modal>
           )}
-        </div>
-      </aside>
-
-      {/* AI Analysis Modal */}
-      <Modal isOpen={showAnalysisModal} onClose={() => setShowAnalysisModal(false)}>
-        <h3 className="text-lg font-semibold mb-4">AI Analysis</h3>
-        {analysisLoading ? (
-          <div className="flex justify-center items-center">
-            <Loader />
-          </div>
-        ) : analysis?.suggestion ? (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: (typeof analysis.suggestion === "string"
-                ? analysis.suggestion
-                : analysis.suggestion.suggestion
-              )
-                .replace(/--- START ANALYSIS FORMAT ---\n?/g, "")
-                .replace(/--- END FORMAT ---\n?/g, "")
-                .replace(/\n/g, "<br/>")
-                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                .replace(/\*(.*?)\*/g, "<em>$1</em>"),
-            }}
-          />
-        ) : (
-          <div className="text-muted-fg">No analysis data available</div>
-        )}
-      </Modal>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };

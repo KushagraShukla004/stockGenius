@@ -1,6 +1,7 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, className }) => {
   if (!isOpen) return null;
 
   return (
@@ -10,7 +11,10 @@ const Modal = ({ isOpen, onClose, children }) => {
 
       {/* Modal Content */}
       <div
-        className="relative bg-slate-600 rounded-lg shadow-lg w-full max-w-2xl p-6 scale-up-top-normal"
+        className={cn(
+          "relative bg-slate-600 rounded-lg shadow-lg w-full max-w-2xl p-6 scale-up-top-normal",
+          className
+        )}
         style={{
           transformOrigin: "center 0%", // This ensures animation starts from top
           perspective: "1000px",
