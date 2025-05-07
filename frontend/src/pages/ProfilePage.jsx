@@ -7,7 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { updateProfile, resetPassword, deleteUser } from "@/store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
+// import { Toaster } from "@/components/ui/sonner";
 import { motion } from "motion/react";
 import { fetchUser } from "@/store/slices/authSlice";
 import { useEffect } from "react";
@@ -300,7 +300,7 @@ const ProfilePage = () => {
           </motion.div>
         </motion.section>
       </motion.div>
-      <Toaster richColors />
+      {/* <Toaster richColors /> */}
     </div>
   );
 };
