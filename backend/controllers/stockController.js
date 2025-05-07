@@ -14,10 +14,53 @@ import {
 // GET /api/stocks
 export const getAllStocks = async (req, res) => {
   try {
-    const stocks = await Stock.find().sort({ symbol: 1 });
-    res.json(stocks);
+    const { search,sector,industry, page = 1, limit = 10 } = req.query;
+
+    // Create filter object
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { symbol: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Add sector filter
+    if (sector) {
+      filter.sector = { $regex: sector, $options: "i" };
+    }
+    
+    // Add industry filter
+    if (industry) {
+      filter.industry = { $regex: industry, $options: "i" };
+    }
+
+    // Pagination calculations
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const itemsPerPage = Math.min(Math.max(Number(limit) || 10, 1), 100);
+    const skip = (currentPage - 1) * itemsPerPage;
+
+    // Get total count and paginated results
+    const totalStocks = await Stock.countDocuments(filter);
+    const stocks = await Stock.find(filter)
+      .sort({ symbol: 1 })
+      .skip(skip)
+      .limit(itemsPerPage);
+
+    res.json({
+      success: true,
+      totalStocks,
+      totalPages: Math.ceil(totalStocks / itemsPerPage),
+      currentPage,
+      itemsPerPage,
+      stocks,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Failed to load stocks" });
+    res.status(500).json({
+      success: false,
+      error: "Failed to load stocks",
+      message: err.message,
+    });
   }
 };
 

@@ -10,6 +10,7 @@ import adminRouter from "./routes/adminRoutes.js";
 import stockRouter from "./routes/stockRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
+import yahooRouter from './routes/yahoo.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -35,6 +36,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/stocks", stockRouter);
+app.use('/api/yahoo', yahooRouter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 
