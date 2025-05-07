@@ -5,6 +5,8 @@ import TradingChart from "@/components/dashboard/TradingChart";
 import { getWatchlist, toggleWatchlist } from "@/store/slices/watchlistSlice";
 import { getAIAnalysis } from "@/store/slices/aiSlice";
 import { getAllStocks } from "@/store/slices/stockSlice";
+import Modal from "@/components/ui/Modal";
+import Loader from "@/components/ui/Loader";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -12,36 +14,36 @@ const Dashboard = () => {
     (state) => state.watchlist
   );
   const { stocks, loading: stocksLoading } = useSelector((state) => state.stocks);
-  const [symbol, setSymbol] = useState("AAPL");
-  const [interval, setInterval] = useState("1D");
-  const [showAllStocks, setShowAllStocks] = useState(false);
-  const intervals = ["1min", "5min", "15min", "1D"];
   const { analysis, loading: analysisLoading } = useSelector((state) => state.ai);
-  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  const [symbol, setSymbol] = useState("AAPL");
+  const [interval, setInterval] = useState("1min");
+  const [showAllStocks, setShowAllStocks] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+
+  const intervals = ["1min", "5min", "15min", "1D"];
 
   useEffect(() => {
     dispatch(getWatchlist());
     dispatch(getAllStocks());
   }, [dispatch]);
 
-  const handleWatchlistToggle = async (stock) => {
-    await dispatch(toggleWatchlist({ symbol: stock.symbol, name: stock.name }));
-    dispatch(getWatchlist());
-  };
-
-  const handleStockClick = (stk) => {
-    setSymbol(stk.symbol);
-  };
-
-  // Remove handleAIAnalysis navigation
   const handleAIAnalysis = async () => {
+    // Open the modal immediately
+    setShowAnalysisModal(true);
+
+    // Fetch the analysis
     await dispatch(getAIAnalysis(symbol));
-    setShowAnalysis(true);
   };
 
   const handleStockSelect = (stock) => {
     setSymbol(stock.symbol);
     setShowAllStocks(false);
+  };
+
+  const handleWatchlistToggle = async (stock) => {
+    await dispatch(toggleWatchlist({ symbol: stock.symbol, name: stock.name }));
+    dispatch(getWatchlist());
   };
 
   const isStockInWatchlist = (stockSymbol) => {
@@ -53,7 +55,9 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         {/* Chart Section */}
-        <div className={`flex-1 ${showAnalysis ? 'h-[calc(100%-24rem)]' : 'h-[calc(100%-9rem)]'} p-4 relative transition-all duration-300`}>
+        <div
+          className={`flex-1 h-[calc(100%-9rem)] p-4 relative transition-all duration-300`}
+        >
           {/* Interval Selector */}
           <div className="flex items-center gap-2 mb-4">
             <div className="flex gap-1 overflow-x-auto scrollbar-none">
@@ -84,53 +88,6 @@ const Dashboard = () => {
             <TradingChart symbol={symbol} interval={interval} />
           </div>
         </div>
-
-        {/* Bottom Panel */}
-        <section className={`${showAnalysis ? 'h-96' : 'h-36'} bg-muted/70 max-[770px]:bg-black border-t border-border p-4 overflow-auto transition-all duration-300 z-10`}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">AI Analysis</h3>
-            {showAnalysis && (
-              <button
-                onClick={() => setShowAnalysis(false)}
-                className="text-sm text-muted-fg hover:text-foreground"
-              >
-                Close
-              </button>
-            )}
-          </div>
-          
-          {showAnalysis ? (
-            analysisLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              </div>
-            ) : (
-              <div className="prose prose-sm max-w-none">
-                {analysis?.suggestion ? (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: (typeof analysis.suggestion === "string"
-                        ? analysis.suggestion
-                        : analysis.suggestion.suggestion
-                      )
-                        .replace(/--- START ANALYSIS FORMAT ---\n?/g, '')
-                        .replace(/--- END FORMAT ---\n?/g, '')
-                        .replace(/\n/g, "<br/>")
-                        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.*?)\*/g, "<em>$1</em>"),
-                    }}
-                  />
-                ) : (
-                  <div className="text-muted-fg">No analysis data available</div>
-                )}
-              </div>
-            )
-          ) : (
-            <div className="text-sm text-muted-fg">
-              Click "AI Analysis" to view insights
-            </div>
-          )}
-        </section>
       </div>
 
       {/* Watchlist Sidebar */}
@@ -161,8 +118,8 @@ const Dashboard = () => {
               </div>
               <div className="flex-1 overflow-y-auto px-4">
                 {stocksLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <div className="flex items-center justify-center">
+                    <Loader />
                   </div>
                 ) : (
                   <ul className="space-y-1 py-2">
@@ -211,8 +168,8 @@ const Dashboard = () => {
           ) : (
             <div className="h-full overflow-y-auto p-4">
               {watchlistLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <div className="flex items-center justify-center">
+                  <Loader />
                 </div>
               ) : (
                 <ul className="space-y-2">
@@ -224,7 +181,7 @@ const Dashboard = () => {
                           ? "bg-muted/50 font-medium"
                           : "hover:bg-muted/30"
                       }`}
-                      onClick={() => handleStockClick(stk)}
+                      onClick={() => handleStockSelect(stk)}
                     >
                       <span>{stk.symbol}</span>
                       <span>{stk.name}</span>
@@ -245,6 +202,32 @@ const Dashboard = () => {
           )}
         </div>
       </aside>
+
+      {/* AI Analysis Modal */}
+      <Modal isOpen={showAnalysisModal} onClose={() => setShowAnalysisModal(false)}>
+        <h3 className="text-lg font-semibold mb-4">AI Analysis</h3>
+        {analysisLoading ? (
+          <div className="flex justify-center items-center">
+            <Loader />
+          </div>
+        ) : analysis?.suggestion ? (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: (typeof analysis.suggestion === "string"
+                ? analysis.suggestion
+                : analysis.suggestion.suggestion
+              )
+                .replace(/--- START ANALYSIS FORMAT ---\n?/g, "")
+                .replace(/--- END FORMAT ---\n?/g, "")
+                .replace(/\n/g, "<br/>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.*?)\*/g, "<em>$1</em>"),
+            }}
+          />
+        ) : (
+          <div className="text-muted-fg">No analysis data available</div>
+        )}
+      </Modal>
     </div>
   );
 };

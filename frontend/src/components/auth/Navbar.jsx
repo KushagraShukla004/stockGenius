@@ -20,7 +20,7 @@ const backdropVariants = {
 };
 
 const Navbar = () => {
-  const { token } = useSelector((state) => state.auth);
+  const { token, role } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +36,9 @@ const Navbar = () => {
     ? [
         { to: "/dashboard", label: "Dashboard" },
         { to: "/profile", label: "Profile" },
+        // Uses the spread operator(...) to conditionally add the Admin Dashboard link
+        // Only shows the link when user has admin role
+        ...(role === "admin" ? [{ to: "/admin", label: "Admin Dashboard" }] : []),
       ]
     : [];
 
@@ -78,7 +81,7 @@ const Navbar = () => {
                     variant="default"
                     className="text-sm font-semibold bg-primary hover:bg-primary/90 transition-colors"
                   >
-                    Login
+                    Get Started!
                   </Button>
                 </Link>
               )}
@@ -141,7 +144,7 @@ const Navbar = () => {
                       onClick={() => setIsMenuOpen(false)}
                       className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors ${
                         isActiveRoute(link.to)
-                          ? "bg-secondary text-secondary-foreground"
+                          ? "bg-primary text-primary-fg"
                           : "text-foreground hover:bg-muted/20"
                       }`}
                     >

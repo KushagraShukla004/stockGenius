@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
 import { useSelector } from "react-redux";
 import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
@@ -7,6 +6,8 @@ import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/ProfilePage";
 import NavbarLayout from "./components/auth/NavbarLayout";
+import AdminRoute from "./components/auth/AdminRoute";
+import AdminPage from "./pages/AdminPage";
 
 export default function App() {
   const { token } = useSelector((state) => state.auth);
@@ -20,6 +21,10 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
+            {/* Admin Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminPage />} />
+            </Route>
           </Route>
         </Route>
 
@@ -29,7 +34,6 @@ export default function App() {
           element={token ? <Navigate to="/dashboard" replace /> : <AuthPage />}
         />
       </Routes>
-      <Toaster richColors />
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createChart, CrosshairMode, CandlestickSeries } from "lightweight-charts";
+import Loader from "../ui/Loader";
+// import useFinnhubWebSocket from "@/hooks/useFinnhubWebSocket";
 
-const TradingChart = ({ symbol, interval = "1D" }) => {
+const TradingChart = ({ symbol, interval = "1min" }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -9,6 +11,28 @@ const TradingChart = ({ symbol, interval = "1D" }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // const handleWebSocketData = useCallback((newCandle) => {
+  //   setData((prev) => {
+  //     const lastCandle = prev[prev.length - 1];
+  //     if (lastCandle && lastCandle.time === newCandle.time) {
+  //       return [
+  //         ...prev.slice(0, -1),
+  //         {
+  //           ...lastCandle,
+  //           high: Math.max(lastCandle.high, newCandle.high),
+  //           low: Math.min(lastCandle.low, newCandle.low),
+  //           close: newCandle.close,
+  //         },
+  //       ];
+  //     } else {
+  //       return [...prev, newCandle];
+  //     }
+  //   });
+  // }, []);
+
+  // Use the custom hook
+  // useFinnhubWebSocket(symbol, handleWebSocketData);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,7 +130,7 @@ const TradingChart = ({ symbol, interval = "1D" }) => {
     <div className="w-full h-full relative">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-          Loading...
+          <Loader />
         </div>
       )}
       {error && (
