@@ -43,7 +43,8 @@
   --font-quicksand: "Quicksand", system-ui, sans-serif;
 
   /* Dark base - using the black from our palette */
-  --background: #282625;
+  /* --background: #282625; */
+  --background: #1c1c1c;
   --foreground: #ffffff;
 
   /* Cards / Surfaces */
@@ -54,7 +55,8 @@
 
   /* Primary = Pink */
   /* --primary: #f13ab1; */
-  --primary: #0eecc0;
+  /* --primary: #0eecc0; */
+  --primary: #77cc16;
   --primary-foreground: #ffffff;
 
   /* Secondary = Blue */
@@ -67,7 +69,8 @@
 
   /* Accent = Green */
   /* --accent: #0eecc0; */
-  --accent: #f13ab1;
+  /* --accent: #f13ab1; */
+  --accent: #e1462f;
   --accent-foreground: #282625;
 
   /* Destructive = Rich red */

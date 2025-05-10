@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "motion/react";
 import { FaChartLine, FaRobot } from "react-icons/fa";
@@ -12,6 +12,7 @@ import { getAllStocks } from "@/store/slices/stockSlice";
 import Modal from "@/components/ui/Modal";
 import Loader from "@/components/ui/Loader";
 import { toast } from "sonner";
+import StepLoader from "@/components/ui/StepLoader";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -26,7 +27,11 @@ const Dashboard = () => {
     currentPage,
   } = useSelector((state) => state.stocks);
 
-  const { analysis, loading: analysisLoading } = useSelector((state) => state.ai);
+  const {
+    analysis,
+    loading: analysisLoading,
+    loadingStep,
+  } = useSelector((state) => state.ai);
 
   const [selectedStock, setSelectedStock] = useState(null);
   const [showChartModal, setShowChartModal] = useState(false);
@@ -230,9 +235,7 @@ const Dashboard = () => {
                 AI Analysis for {selectedStock?.symbol}
               </h3>
               {analysisLoading ? (
-                <div className="flex justify-center">
-                  <Loader />
-                </div>
+                <StepLoader currentStep={loadingStep} isLoading={analysisLoading} />
               ) : analysis?.suggestion ? (
                 <div
                   dangerouslySetInnerHTML={{
