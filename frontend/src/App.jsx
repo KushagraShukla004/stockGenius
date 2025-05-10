@@ -9,12 +9,14 @@ import ProfilePage from "./pages/ProfilePage";
 import NavbarLayout from "./components/auth/NavbarLayout";
 import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
+import { ConfigProvider } from "antd";
+import { theme } from "./theme/antd.config";
 
 export default function App() {
   const { token } = useSelector((state) => state.auth);
 
   return (
-    <>
+    <ConfigProvider theme={theme}>
       <div className="min-h-screen bg-background dark:bg-background">
         <Routes>
           {/* Routes with Navbar */}
@@ -38,6 +40,6 @@ export default function App() {
         </Routes>
       </div>
       <Toaster position="top-right" expand richColors closeButton />
-    </>
+    </ConfigProvider>
   );
 }

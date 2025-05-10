@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useMemo } from "react";
-import { Table, Input, Select, Typography, message } from "antd";
+import { Table, Input, Select, message } from "antd";
 import { Button } from "@/components/ui/button";
 import { Star, StarOff } from "lucide-react";
 import { IoSearchOutline } from "react-icons/io5";
@@ -13,7 +13,6 @@ import { getAllStocks } from "@/store/slices/stockSlice";
 
 const { Search } = Input;
 const { Option } = Select;
-const { Text } = Typography;
 
 const StocksTable = ({
   data = [],
@@ -26,7 +25,7 @@ const StocksTable = ({
   industries = [],
   selectedStock = null,
   currentPage = 1,
-  onShowChart, // Add new props for button actions
+  onShowChart,
   onShowAnalysis,
 }) => {
   const dispatch = useDispatch();
@@ -37,7 +36,6 @@ const StocksTable = ({
     current: currentPage,
     pageSize: 10,
     total: totalStocks,
-    showSizeChanger: true,
     showQuickJumper: true,
     showTotal: (total) => `Total ${total} stocks`,
     style: {
@@ -126,59 +124,59 @@ const StocksTable = ({
       title: "Symbol",
       dataIndex: "symbol",
       key: "symbol",
-      width: 100,
-      style: {
-        paddingLeft: "2px",
-      },
+      width: 120,
       fixed: "left",
       render: (text, record) => (
-        <Text
-          strong
-          className={`pl-2 cursor-pointer transition-colors ${
-            selectedStock?.symbol === record.symbol
-              ? "text-primary"
-              : "hover:text-primary"
-          }`}
+        <p
+          className="cursor-pointer pl-2 font-bold whitespace-nowrap"
           onClick={() => handleStockClick(record)}
         >
           {text}
-        </Text>
+        </p>
       ),
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      width: 250, // Fixed width for better visibility
+      ellipsis: true,
+      fixed: "left",
       render: (text, record) => (
-        <Text
-          className="cursor-pointer hover:text-primary"
+        <p
+          className="cursor-pointer font-medium"
           onClick={() => onStockSelect(record)}
+          title={text}
         >
           {text}
-        </Text>
+        </p>
       ),
     },
     {
       title: "Sector",
       dataIndex: "sector",
       key: "sector",
-      width: 150,
+      width: 180,
+      ellipsis: true,
+      responsive: ["lg"],
     },
     {
       title: "Industry",
       dataIndex: "industry",
       key: "industry",
       width: 200,
+      ellipsis: true,
+      responsive: ["xl"],
     },
     {
       title: "Action",
       key: "action",
       width: 80,
-      fixed: "right",
+      fixed: "right", // Keep Action column always visible
       render: (_, record) => (
         <button
           onClick={() => onWatchlistToggle(record)}
-          className="text-lg hover:scale-110 transition-transform"
+          className="text-lg hover:scale-110 transition-transform px-2"
         >
           {isStockInWatchlist(record.symbol) ? (
             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -282,10 +280,12 @@ const StocksTable = ({
         scroll={{ x: "100%", y: "calc(100vh - 300px)" }}
         rowKey="symbol"
         size="middle"
-        className="bg-white rounded-lg shadow-l"
+        className="bg-[#333130] rounded-lg shadow-l"
         rowClassName={(record) =>
-          selectedStock?.symbol === record.symbol ? "bg-primary/40" : ""
+          selectedStock?.symbol === record.symbol ? "selected-row" : ""
         }
+        sticky="true"
+        tableLayout="fixed"
       />
 
       {/* No Data Message */}
