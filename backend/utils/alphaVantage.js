@@ -30,9 +30,15 @@ export const getDailyCandlesticks = async (symbol) => {
 };
 
 export const getIntradayCandlesticks = async (symbol, interval = "5min") => {
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${process.env.ALPHA_API_KEY}&outputsize=compact`;
-  const res = await fetch(url);
-  const data = await res.json();
+  const { data } = await axios.get(BASE_URL, {
+    params: {
+      function: "TIME_SERIES_INTRADAY",
+      symbol,
+      interval,
+      apikey: ALPHA_VANTAGE_API_KEY, // Use the consistent API key variable
+      outputsize: "compact",
+    },
+  });
   return data;
 };
 

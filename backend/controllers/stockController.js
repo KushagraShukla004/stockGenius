@@ -14,7 +14,7 @@ import {
 // GET /api/stocks
 export const getAllStocks = async (req, res) => {
   try {
-    const { search,sector,industry, page = 1, limit = 10 } = req.query;
+    const { search, sector, industry, page = 1, limit = 10 } = req.query;
 
     // Create filter object
     const filter = {};
@@ -29,7 +29,7 @@ export const getAllStocks = async (req, res) => {
     if (sector) {
       filter.sector = { $regex: sector, $options: "i" };
     }
-    
+
     // Add industry filter
     if (industry) {
       filter.industry = { $regex: industry, $options: "i" };
@@ -125,35 +125,9 @@ export const getLiveStockData = async (req, res) => {
   }
 };
 
-// GET /api/stocks/:symbol/candles
-// export const getCandlestickData = async (req, res) => {
-//   const { symbol } = req.params;
-//   const cacheKey = `stock:candles:${symbol}`;
-
-//   try {
-//     const cached = await getCache(cacheKey);
-//     if (cached) return res.json(cached);
-
-//     const raw = await getDailyCandlesticks(symbol);
-//     const timeSeries = raw["Time Series (Daily)"];
-//     const transformed = Object.entries(timeSeries).map(([date, values]) => ({
-//       date,
-//       open: parseFloat(values["1. open"]),
-//       high: parseFloat(values["2. high"]),
-//       low: parseFloat(values["3. low"]),
-//       close: parseFloat(values["4. close"]),
-//       volume: parseInt(values["5. volume"]),
-//     }));
-
-//     await setCache(cacheKey, transformed, 3600); // cache for 1 hour
-//     res.json(transformed);
-//   } catch (err) {
-//     res.status(500).json({ error: "Failed to fetch candlestick data." });
-//   }
-// };
 export const getCandlestickData = async (req, res) => {
   const { symbol } = req.params;
-  const { interval = "1D" } = req.query; // default is 1D
+  const { interval = "1D" } = req.query;
   const upperSymbol = symbol.toUpperCase();
 
   const cacheKey = `stock:candles:${upperSymbol}:${interval}`;
@@ -168,30 +142,38 @@ export const getCandlestickData = async (req, res) => {
       raw = await getDailyCandlesticks(upperSymbol);
       timeSeries = raw["Time Series (Daily)"];
     } else {
-      raw = await getIntradayCandlesticks(upperSymbol, interval);
-      timeSeries = raw[`Time Series (${interval})`];
+      // Convert interval format if needed (e.g., "5min" to "5")
+      const formattedInterval = interval.replace("min", "");
+      raw = await getIntradayCandlesticks(upperSymbol, formattedInterval);
+      timeSeries = raw[`Time Series (${formattedInterval}min)`];
     }
 
-    if (!timeSeries) {
+    if (!timeSeries || Object.keys(timeSeries).length === 0) {
+      console.error("No data received for", symbol, interval, raw);
       return res
         .status(404)
         .json({ error: "Data not available. Try again later or check interval." });
     }
 
-    const transformed = Object.entries(timeSeries).map(([date, values]) => ({
-      date,
-      open: parseFloat(values["1. open"]),
-      high: parseFloat(values["2. high"]),
-      low: parseFloat(values["3. low"]),
-      close: parseFloat(values["4. close"]),
-      volume: parseInt(values["5. volume"]),
-    }));
+    const transformed = Object.entries(timeSeries)
+      .map(([date, values]) => ({
+        date,
+        open: parseFloat(values["1. open"]),
+        high: parseFloat(values["2. high"]),
+        low: parseFloat(values["3. low"]),
+        close: parseFloat(values["4. close"]),
+        volume: parseInt(values["5. volume"]),
+      }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date)); // Ensure chronological order
 
-    await setCache(cacheKey, transformed, 300); // cache for 5 min
+    await setCache(cacheKey, transformed, 300);
     res.json(transformed);
   } catch (err) {
     console.error("Error fetching candlesticks:", err.message);
-    res.status(500).json({ error: "Failed to fetch candlestick data." });
+    res.status(500).json({
+      error: "Failed to fetch candlestick data.",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 };
 // Get current price with caching
