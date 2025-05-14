@@ -1,10 +1,10 @@
 export const theme = {
   token: {
-    colorPrimary: "#6366F1", // Vibrant indigo
+    colorPrimary: "#35b0ab", // Updated to teal from our palette
     colorSuccess: "#10B981", // Emerald green
     colorWarning: "#F59E0B", // Amber
     colorError: "#EF4444", // Red
-    colorInfo: "#3B82F6", // Blue
+    colorInfo: "#4ecac5", // Updated to light teal from our palette
 
     colorBgBase: "#0F172A", // Dark blue background
     colorTextBase: "#E2E8F0", // Light gray text
@@ -23,7 +23,7 @@ export const theme = {
   },
   components: {
     Button: {
-      colorPrimary: "#6366F1",
+      colorPrimary: "#35b0ab", // Updated to teal
       algorithm: true,
       borderRadius: 6,
       controlHeight: 36,
@@ -34,13 +34,13 @@ export const theme = {
       colorBgContainer: "#1E293B",
       colorBorder: "#334155",
       borderRadius: 6,
-      activeShadow: "0 0 0 2px rgba(99, 102, 241, 0.2)",
+      activeShadow: "0 0 0 2px rgba(53, 176, 171, 0.2)", // Updated to teal
     },
     Select: {
       colorBgContainer: "#1E293B",
       colorBorder: "#334155",
       borderRadius: 6,
-      optionSelectedBg: "rgba(99, 102, 241, 0.1)",
+      optionSelectedBg: "rgba(53, 176, 171, 0.1)", // Updated to teal
     },
     Table: {
       colorBgContainer: "#1E293B",
@@ -48,8 +48,8 @@ export const theme = {
       headerBg: "#252f3f",
       headerColor: "#e2e8f0",
       headerSplitColor: "#374151",
-      rowHoverBg: "rgba(99, 102, 241, 0.08)",
-      selectedRowBg: "rgba(99, 102, 241, 0.12)",
+      rowHoverBg: "rgba(53, 176, 171, 0.08)", // Updated to teal
+      selectedRowBg: "rgba(53, 176, 171, 0.12)", // Updated to teal
       borderRadius: 8,
       fontSize: 14,
     },
@@ -68,9 +68,9 @@ export const theme = {
     },
     Tabs: {
       colorBgContainer: "#FFFFFF",
-      colorPrimary: "#4F46E5",
+      colorPrimary: "#35b0ab", // Updated to teal
       borderRadius: 8,
-      inkBarColor: "#4F46E5",
+      inkBarColor: "#35b0ab", // Updated to teal
     },
   },
 };
