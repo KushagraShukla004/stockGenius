@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { LockKeyhole } from "lucide-react";
 
 const ErrorPage = ({
@@ -62,7 +62,7 @@ const ErrorPage = ({
         >
           <Link
             to="/dashboard"
-            className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-fg rounded-lg font-medium transition-colors hover:bg-primary/90"
           >
             Back to Dashboard
           </Link>
