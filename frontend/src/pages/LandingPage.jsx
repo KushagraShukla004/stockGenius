@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 import {
   BarChart3,
@@ -10,18 +10,29 @@ import {
   LineChart,
   ArrowRight,
   ChevronDown,
-  ChevronUp,
+  TrendingUp,
+  Shield,
+  Zap,
+  BarChart,
+  PieChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SplashScreen from "@/components/ui/SplashScreen";
+import HeroSection from "@/components/ui/HeroSection";
 
 const LandingPage = () => {
   const { token } = useSelector((state) => state.auth);
   const [isVisible, setIsVisible] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState(null);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
 
   const features = [
     {
@@ -44,9 +55,30 @@ const LandingPage = () => {
     },
     {
       icon: <LineChart className="h-10 w-10 text-primary" />,
-      title: "Technical Indicators",
+      title: "UI/UX at its Peak!",
       description:
-        "Analyze stocks using popular technical indicators and chart patterns.",
+        "Experience a sleek, modern interface with fluid animations, and responsive design for seamless trading across all devices.",
+    },
+  ];
+
+  const steps = [
+    {
+      step: "01",
+      title: "Connect Your Account",
+      description:
+        "Create an account and set your investment preferences to personalize your experience.",
+    },
+    {
+      step: "02",
+      title: "Explore Market Data",
+      description:
+        "Access real-time stock data, charts, and market indicators to stay informed.",
+    },
+    {
+      step: "03",
+      title: "Get AI Recommendations",
+      description:
+        "Receive personalized stock recommendations and insights based on your preferences.",
     },
   ];
 
@@ -56,21 +88,21 @@ const LandingPage = () => {
       role: "Day Trader",
       content:
         "StockGenius has completely transformed my trading strategy. The AI insights have helped me identify opportunities I would have otherwise missed.",
-      avatar: "/placeholder.svg?height=60&width=60",
+      avatar: "/assets/StockImage.png",
     },
     {
       name: "Michael Chen",
       role: "Long-term Investor",
       content:
         "As someone who invests for the long term, the analysis provided by StockGenius gives me confidence in my investment decisions.",
-      avatar: "/placeholder.svg?height=60&width=60",
+      avatar: "/assets/StockImage1.png",
     },
     {
       name: "Jessica Williams",
       role: "Financial Advisor",
       content:
         "I recommend StockGenius to all my clients. The intuitive interface and powerful tools make it accessible for investors of all experience levels.",
-      avatar: "/placeholder.svg?height=60&width=60",
+      avatar: "/assets/StockImage2.png",
     },
   ];
 
@@ -101,359 +133,283 @@ const LandingPage = () => {
     setActiveAccordion(activeAccordion === index ? null : index);
   };
 
+  const stats = [
+    { value: "98%", label: "Accuracy Rate", icon: <Shield className="h-6 w-6" /> },
+    { value: "24/7", label: "Market Monitoring", icon: <Zap className="h-6 w-6" /> },
+    { value: "10K+", label: "Active Users", icon: <BarChart className="h-6 w-6" /> },
+    { value: "50+", label: "Stocks Analyzed", icon: <PieChart className="h-6 w-6" /> },
+  ];
+
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary via-secondary to-accent opacity-30"></div>
-          <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center mix-blend-overlay"></div>
-        </div>
+    <>
+      <AnimatePresence>
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </AnimatePresence>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              <span className="gradient-text">Intelligent Stock Analysis</span>
-              <br />
-              Powered by AI
-            </h1>
+      {!showSplash && (
+        <div className="min-h-screen overflow-hidden">
+          <HeroSection features={features} />
 
-            <p className="text-lg md:text-xl text-gray-300 mb-10">
-              Make smarter investment decisions with real-time data, AI-driven insights,
-              and powerful analytics tools.
-            </p>
+          {/* How It Works Section with Animated Steps */}
+          <section className="py-24 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background"></div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={token ? "/dashboard" : "/auth"}>
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-accent-fg"
-                >
-                  {token ? "Go to Dashboard" : "Get Started"}{" "}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/profile">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-accent-fg"
-                >
-                  {token ? "View Profile" : "Learn More"}
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-card">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Everything you need to analyze the market and make informed investment
-              decisions.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
+            <div className="container mx-auto px-4 relative z-10">
               <motion.div
-                key={index}
+                className="text-center mb-16"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-background p-6 rounded-xl card-hover"
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, amount: 0.3 }}
               >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
+                <h2 className="text-3xl md:text-5xl font-bold mb-4 gradient-text-alt">
+                  How It Works
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                  StockGenius simplifies the process of stock analysis and investment
+                  decision-making.
+                </p>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* How It Works Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              StockGenius simplifies the process of stock analysis and investment
-              decision-making.
-            </p>
-          </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
+                {/* Connecting line */}
+                <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-secondary hidden lg:block"></div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              <div className="bg-card p-6 rounded-xl h-full">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 text-primary mb-4">
-                  <span className="font-bold">1</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Create Your Account</h3>
-                <p className="text-gray-400">
-                  Sign up for StockGenius and set up your investment preferences and risk
-                  tolerance.
-                </p>
+                {steps.map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.2 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    className="relative z-10"
+                  >
+                    <div className="bg-card border border-primary/20 rounded-xl p-8 h-full flex flex-col items-center text-center relative">
+                      <motion.div
+                        className="absolute -top-8 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      >
+                        {item.step}
+                      </motion.div>
+                      <h3 className="text-xl font-semibold mb-4 mt-6">{item.title}</h3>
+                      <p className="text-gray-400">{item.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-                <ArrowRight className="h-8 w-8 text-primary" />
-              </div>
-            </motion.div>
+            </div>
+          </section>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              <div className="bg-card p-6 rounded-xl h-full">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-secondary/20 text-secondary mb-4">
-                  <span className="font-bold">2</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Explore Stocks</h3>
-                <p className="text-gray-400">
-                  Browse our extensive database of stocks, create watchlists, and track
-                  your favorite companies.
-                </p>
-              </div>
-              <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-                <ArrowRight className="h-8 w-8 text-secondary" />
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <div className="bg-card p-6 rounded-xl h-full">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent/20 text-accent mb-4">
-                  <span className="font-bold">3</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Get AI Insights</h3>
-                <p className="text-gray-400">
-                  Receive personalized recommendations and in-depth analysis to make
-                  informed investment decisions.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-card">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Users Say</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Join thousands of investors who trust StockGenius for their investment
-              decisions.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+          {/* Testimonials Section with Card Flip Animation */}
+          <section className="py-24 bg-card/50">
+            <div className="container mx-auto px-4">
               <motion.div
-                key={index}
+                className="text-center mb-16"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-background p-6 rounded-xl"
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, amount: 0.3 }}
               >
-                <div className="flex items-center mb-4">
-                  <img
-                    src={testimonial.avatar || "/placeholder.svg"}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-gray-400 text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-300 italic">"{testimonial.content}"</p>
+                <h2 className="text-3xl md:text-5xl font-bold mb-4 gradient-text-alt">
+                  What Our Users Say
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                  Join thousands of investors who trust StockGenius for their investment
+                  decisions.
+                </p>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* FAQ Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Find answers to common questions about StockGenius.
-            </p>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    whileHover={{ y: -10 }}
+                    className="bg-background rounded-xl p-8 shadow-lg border border-primary/10 h-full flex flex-col"
+                  >
+                    <div className="mb-6">
+                      {/* Stars */}
+                      <div className="flex mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <motion.svg
+                            key={i}
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3 + i * 0.1, duration: 0.3 }}
+                            className="w-5 h-5 text-yellow-500 fill-current mr-1"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </motion.svg>
+                        ))}
+                      </div>
+                      <p className="text-gray-300 italic mb-6">"{testimonial.content}"</p>
+                    </div>
+                    <div className="mt-auto flex items-center">
+                      <img
+                        src={testimonial.avatar || "/placeholder.svg"}
+                        alt={testimonial.name}
+                        className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-primary"
+                      />
+                      <div>
+                        <h4 className="font-semibold">{testimonial.name}</h4>
+                        <p className="text-gray-400 text-sm">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-          <div className="max-w-3xl mx-auto">
-            {faqs.map((faq, index) => (
+          {/* FAQ Section with Accordion Animation */}
+          <section className="py-24">
+            <div className="container mx-auto px-4">
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
+                className="text-center mb-16"
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="mb-4"
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, amount: 0.3 }}
               >
-                <button
-                  onClick={() => toggleAccordion(index)}
-                  className={`w-full flex justify-between items-center p-4 rounded-lg text-left ${
-                    activeAccordion === index
-                      ? "bg-card"
-                      : "bg-background hover:bg-card/50"
-                  }`}
-                >
-                  <span className="font-semibold">{faq.question}</span>
-                  {activeAccordion === index ? (
-                    <ChevronUp className="h-5 w-5 text-primary" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-
-                {activeAccordion === index && (
-                  <div className="p-4 bg-card/50 rounded-b-lg mt-1">
-                    <p className="text-gray-300">{faq.answer}</p>
-                  </div>
-                )}
+                <h2 className="text-3xl md:text-5xl font-bold mb-4 gradient-text">
+                  Frequently Asked Questions
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                  Find answers to common questions about StockGenius.
+                </p>
               </motion.div>
+
+              <div className="max-w-3xl mx-auto">
+                {faqs.map((faq, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    className="mb-4"
+                  >
+                    <button
+                      onClick={() => toggleAccordion(index)}
+                      className={`w-full text-left p-6 rounded-lg flex justify-between items-center transition-all duration-300 ${
+                        activeAccordion === index
+                          ? "bg-primary/20 border-primary/30"
+                          : "bg-card hover:bg-card/80"
+                      } border border-primary/10`}
+                    >
+                      <h3 className="text-lg font-semibold">{faq.question}</h3>
+                      <motion.div
+                        animate={{ rotate: activeAccordion === index ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown className="h-5 w-5 text-primary" />
+                      </motion.div>
+                    </button>
+                    <AnimatePresence>
+                      {activeAccordion === index && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-6 bg-background/50 border border-t-0 border-primary/10 rounded-b-lg">
+                            <p className="text-gray-400">{faq.answer}</p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Section with Floating Elements */}
+          <section className="py-24 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-30"></div>
+
+            {/* Floating elements */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-primary/10"
+                style={{
+                  width: Math.random() * 100 + 50,
+                  height: Math.random() * 100 + 50,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  zIndex: 0,
+                }}
+                animate={{
+                  x: [0, Math.random() * 100 - 50],
+                  y: [0, Math.random() * 100 - 50],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: Math.random() * 10 + 10,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                }}
+              />
             ))}
-          </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20"></div>
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Ready to Transform Your Investment Strategy?
-            </h2>
-            <p className="text-lg text-gray-300 mb-8">
-              Join StockGenius today and gain access to powerful tools and insights that
-              will help you make better investment decisions.
-            </p>
-
-            <Link to={token ? "/dashboard" : "/auth"}>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-accent-fg">
-                {token ? "Go to Dashboard" : "Get Started Now"}{" "}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 bg-card">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <h3 className="text-2xl font-bold text-primary">StockGenius</h3>
-              <p className="text-gray-400 mt-2">Intelligent Stock Analysis</p>
+            <div className="container mx-auto px-4 relative z-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, amount: 0.3 }}
+                className="bg-card border border-primary/20 rounded-2xl p-12 max-w-4xl mx-auto text-center shadow-xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5"></div>
+                <div className="relative z-10">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                    Ready to Transform Your Investment Strategy?
+                  </h2>
+                  <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                    Join thousands of investors who are already using StockGenius to make
+                    smarter investment decisions.
+                  </p>
+                  <Link to={token ? "/dashboard" : "/auth"}>
+                    <Button
+                      size="lg"
+                      variant="gradient"
+                      className="hover:opacity-90 font-bold text-lg px-10 py-6"
+                    >
+                      {token ? "Go to Dashboard" : "Get Started Now"}{" "}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                </div>
+              </motion.div>
             </div>
+          </section>
 
-            <div className="flex flex-wrap gap-8">
-              <div>
-                <h4 className="font-semibold mb-3">Product</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Features
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Pricing
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      API
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-3">Company</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      About
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Blog
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Careers
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-3">Legal</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Privacy
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Terms
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-gray-400 hover:text-primary">
-                      Security
-                    </a>
-                  </li>
-                </ul>
+          {/* Footer */}
+          <footer className="py-12 bg-background border-t border-primary/10">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <div className="flex items-center mb-6 md:mb-0">
+                  <TrendingUp className="h-8 w-8 text-primary mr-2" />
+                  <span className="text-2xl font-bold gradient-text">StockGenius</span>
+                </div>
+                <div className="text-gray-400 text-sm">
+                  © {new Date().getFullYear()} StockGenius. All rights reserved.
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-500">
-            <p>&copy; {new Date().getFullYear()} StockGenius. All rights reserved.</p>
-          </div>
+          </footer>
         </div>
-      </footer>
-    </div>
+      )}
+    </>
   );
 };
 

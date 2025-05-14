@@ -11,35 +11,38 @@ import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
 import { ConfigProvider } from "antd";
 import { theme } from "./theme/antd.config";
+import { ParallaxProvider } from "react-scroll-parallax";
 
 export default function App() {
   const { token } = useSelector((state) => state.auth);
 
   return (
-    <ConfigProvider theme={theme}>
-      <div className="min-h-screen bg-background dark:bg-background">
-        <Routes>
-          {/* Routes with Navbar */}
-          <Route element={<NavbarLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              {/* Admin Routes */}
-              <Route element={<AdminRoute />}>
-                <Route path="/admin" element={<AdminPage />} />
+    <ParallaxProvider>
+      <ConfigProvider theme={theme}>
+        <div className="min-h-screen bg-background dark:bg-background">
+          <Routes>
+            {/* Routes with Navbar */}
+            <Route element={<NavbarLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                {/* Admin Routes */}
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<AdminPage />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
 
-          {/* Auth Route */}
-          <Route
-            path="/auth"
-            element={token ? <Navigate to="/dashboard" replace /> : <AuthPage />}
-          />
-        </Routes>
-      </div>
-      <Toaster position="top-right" expand richColors closeButton />
-    </ConfigProvider>
+            {/* Auth Route */}
+            <Route
+              path="/auth"
+              element={token ? <Navigate to="/dashboard" replace /> : <AuthPage />}
+            />
+          </Routes>
+        </div>
+        <Toaster position="top-right" expand richColors closeButton />
+      </ConfigProvider>
+    </ParallaxProvider>
   );
 }
