@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { updateProfile, resetPassword, deleteUser } from "@/store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
-// import { Toaster } from "@/components/ui/sonner";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { fetchUser } from "@/store/slices/authSlice";
 import { useEffect } from "react";
 
@@ -134,7 +133,7 @@ const ProfilePage = () => {
       >
         {/* Profile Section */}
         <motion.section variants={fadeUp} className="space-y-6">
-          <h2 className="text-3xl font-bold text-primary">Profile Information</h2>
+          <h2 className="text-3xl font-bold gradient-text">Profile Information</h2>
           <form onSubmit={profileForm.handleSubmit} className="space-y-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <motion.div
@@ -189,7 +188,7 @@ const ProfilePage = () => {
                         !profileForm.values.editingName
                       )
                     }
-                    className="px-3 py-1 text-sm"
+                    className="px-3 py-1 text-sm text-accent-fg"
                   >
                     {profileForm.values.editingName ? "Save" : "Edit"}
                   </Button>
@@ -216,7 +215,7 @@ const ProfilePage = () => {
                         !profileForm.values.editingEmail
                       )
                     }
-                    className="px-3 py-1 text-sm"
+                    className="px-3 py-1 text-sm text-accent-fg"
                   >
                     {profileForm.values.editingEmail ? "Save" : "Edit"}
                   </Button>
@@ -224,7 +223,11 @@ const ProfilePage = () => {
               </div>
             </div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button type="submit" className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                variant="gradient"
+                className="w-full sm:w-auto text-white"
+              >
                 Update Profile
               </Button>
             </motion.div>
@@ -233,7 +236,7 @@ const ProfilePage = () => {
 
         {/* Password Section */}
         <motion.section variants={fadeUp} className="space-y-6">
-          <h2 className="text-3xl font-bold text-secondary">Change Password</h2>
+          <h2 className="text-3xl font-bold gradient-text-alt">Change Password</h2>
           <form onSubmit={passwordForm.handleSubmit} className="space-y-4">
             <Input
               label="Current Password"
@@ -275,7 +278,11 @@ const ProfilePage = () => {
               className="bg-gray-900 text-white border border-gray-700 placeholder:text-gray-300"
             />
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button type="submit" className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                variant="gradient"
+                className="w-full sm:w-auto text-white"
+              >
                 Change Password
               </Button>
             </motion.div>
@@ -293,14 +300,13 @@ const ProfilePage = () => {
               variant="destructive"
               onClick={handleDeleteAccount}
               disabled={isDeleting}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto text-accent-fg"
             >
               {isDeleting ? "Deleting..." : "Delete Account"}
             </Button>
           </motion.div>
         </motion.section>
       </motion.div>
-      {/* <Toaster richColors /> */}
     </div>
   );
 };
