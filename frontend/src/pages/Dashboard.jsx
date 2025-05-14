@@ -1,18 +1,20 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaChartLine, FaRobot } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import StocksTable from "@/components/dashboard/StocksTable";
 import TradingChart from "@/components/dashboard/TradingChart";
 import { getWatchlist, toggleWatchlist } from "@/store/slices/watchlistSlice";
-import { getAIAnalysis } from "@/store/slices/aiSlice";
+import { clearAnalysis, getAIAnalysis } from "@/store/slices/aiSlice";
 import { getAllStocks } from "@/store/slices/stockSlice";
 import Modal from "@/components/ui/Modal";
 import Loader from "@/components/ui/Loader";
 import { toast } from "sonner";
 import StepLoader from "@/components/ui/StepLoader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Maximize2, Minimize2, RefreshCw, Star } from "lucide-react";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -37,16 +39,24 @@ const Dashboard = () => {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [interval, setInterval] = useState("1min");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeTab, setActiveTab] = useState("chart");
+  const [showWatchlistModal, setShowWatchlistModal] = useState(false);
+  const chartRef = useRef(null);
 
   useEffect(() => {
     dispatch(getWatchlist());
     dispatch(getAllStocks());
   }, [dispatch]);
 
-  // Extract unique sectors and industries from stocks (DSA Knowledge)
-  // creating Array of (by using [])
-  // unique (by using Set data structure (Set appends unique values to the array))
-  // adding new unique elements instead of overriding by using spread operator(...)
+  {
+    /*
+  Extract unique sectors and industries from stocks (DSA Knowledge)
+  1. creating Array of (by using [])
+  2. unique (by using Set data structure (Set appends unique values to the array)) 
+  3. adding new unique elements instead of overriding by using spread operator(...)
+  */
+  }
   const sectors = [...new Set(stocks.map((stock) => stock.sector))]
     .filter(Boolean)
     .sort();
@@ -54,29 +64,21 @@ const Dashboard = () => {
     .filter(Boolean)
     .sort();
 
-  const handleStockSelect = (stock) => {
-    if (!stock) {
-      toast.error("Please select a valid stock");
-      return;
-    }
-    setSelectedStock(stock);
-    toast.success(`Selected ${stock.symbol}`);
-  };
-
   const handleShowChart = () => {
     if (!selectedStock) {
       toast.error("Please select a stock to view chart");
       return;
     }
     setShowChartModal(true);
+    setActiveTab("chart");
   };
 
-  const handleAIAnalysis = async () => {
-    if (!selectedStock) {
-      toast.error("Please select a stock for AI analysis");
-      return;
-    }
-    setShowAnalysisModal(true);
+  const handleAIAnalysis = useCallback(async () => {
+    if (!selectedStock) return toast.error("Please select a stock for AI analysis");
+
+    dispatch(clearAnalysis());
+    setActiveTab("analysis");
+    setShowChartModal(true);
 
     try {
       await dispatch(getAIAnalysis(selectedStock.symbol));
@@ -84,7 +86,29 @@ const Dashboard = () => {
     } catch (error) {
       toast.error(`Failed to load analysis: ${error.message}`);
     }
-  };
+  }, [dispatch, selectedStock]);
+
+  // Add this new effect to watch for selectedStock changes
+  useEffect(() => {
+    if (selectedStock && showChartModal && activeTab === "analysis") {
+      handleAIAnalysis();
+    }
+  }, [activeTab, handleAIAnalysis, selectedStock, showChartModal]);
+
+  // Simplified handlers
+  const handleStockSelect = useCallback(
+    (stock) => {
+      if (!stock) return toast.error("Please select a valid stock");
+
+      if (selectedStock?.symbol !== stock.symbol) {
+        dispatch(clearAnalysis());
+        setSelectedStock(stock);
+      }
+
+      toast.success(`Selected ${stock.symbol}`);
+    },
+    [dispatch, selectedStock]
+  );
 
   const handleWatchlistToggle = async (stock) => {
     try {
@@ -104,7 +128,102 @@ const Dashboard = () => {
     return watchlist.some((stock) => stock.symbol === symbol);
   };
 
-  const intervals = ["1min", "5min", "15min", "1D"];
+  const intervals = [
+    { label: "1min", value: "1min" },
+    { label: "5min", value: "5min" },
+    { label: "15min", value: "15min" },
+    { label: "1D", value: "1D" },
+  ];
+
+  const handleIntervalChange = (newInterval) => {
+    setInterval(newInterval);
+    // Clear existing data when interval changes
+    if (chartRef.current) {
+      chartRef.current.timeScale().fitContent();
+    }
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const handleTabChange = async (newTab) => {
+    setActiveTab(newTab);
+    if (newTab === "analysis" && !analysis) {
+      try {
+        await dispatch(getAIAnalysis(selectedStock.symbol));
+        toast.success(`Analysis loaded for ${selectedStock.symbol}`);
+      } catch (error) {
+        toast.error(`Failed to load analysis: ${error.message}`);
+      }
+    }
+  };
+
+  // Watchlist modal added at the last
+  const WatchlistModal = ({ isOpen, onClose }) => (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="w-[95vw] sm:w-[400px] h-[80vh] max-w-none m-4"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Watchlist</h3>
+        <Button variant="ghost" size="sm" onClick={() => dispatch(getWatchlist())}>
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {watchlistLoading ? (
+        <div className="flex justify-center">
+          <Loader />
+        </div>
+      ) : watchlist.length > 0 ? (
+        <div className="space-y-2">
+          {watchlist.map((stock) => (
+            <motion.div
+              key={stock.symbol}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                selectedStock?.symbol === stock.symbol
+                  ? "bg-primary/10 border border-primary/20"
+                  : "hover:bg-muted/50 border border-transparent"
+              }`}
+              onClick={() => {
+                handleStockSelect(stock);
+                onClose();
+              }}
+            >
+              <div>
+                <div className="font-medium">{stock.symbol}</div>
+                <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWatchlistToggle(stock);
+                }}
+              >
+                {isStockInWatchlist(stock.symbol) ? (
+                  <FaChartLine className="h-4 w-4 text-primary" />
+                ) : (
+                  <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>No stocks in watchlist</p>
+          <p className="text-sm mt-2">Click the star icon on stocks to add them</p>
+        </div>
+      )}
+    </Modal>
+  );
 
   return (
     <div className="h-[calc(100vh-64px)] overflow-hidden bg-background">
@@ -114,7 +233,7 @@ const Dashboard = () => {
         className="h-full p-4 flex flex-col"
       >
         {/* Stocks Table with integrated action buttons */}
-        <div className="flex-1 p-4 max-h-fit bg-white/30 rounded-xl shadow-lg overflow-hidden">
+        <div className="flex-1 p-4 max-h-fit bg-card rounded-xl shadow-md overflow-hidden border border-muted">
           <StocksTable
             data={stocks}
             loading={stocksLoading}
@@ -134,75 +253,189 @@ const Dashboard = () => {
         </div>
 
         {/* Modals */}
-        {/* Chart Modal - Full width */}
+        {/* Combined Chart and Analysis Modal */}
         <AnimatePresence>
           {showChartModal && (
             <Modal
               isOpen={showChartModal}
               onClose={() => setShowChartModal(false)}
-              className="w-[95vw] h-[90vh] max-w-none m-4" // Override default width
+              className={
+                isFullscreen
+                  ? "fixed inset-0 w-screen h-screen m-0 p-0"
+                  : "w-[95vw] sm:w-[90vw] md:w-[85vw] h-[90vh] max-w-none m-4"
+              }
             >
               <div className="h-full flex flex-col">
                 {/* Header with Controls */}
-                <div className="flex items-center justify-between p-4 border-b">
-                  <div className="flex items-center gap-4">
-                    <h3 className="text-xl font-semibold">
-                      {selectedStock?.symbol} Chart
-                    </h3>
-                    <div className="flex gap-1 overflow-x-auto scrollbar-none">
-                      {intervals.map((i) => (
-                        <Button
-                          key={i}
-                          variant={i === interval ? "default" : "outline"}
-                          onClick={() => setInterval(i)}
-                          size="sm"
-                        >
-                          {i}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b gap-4">
                   <div className="flex items-center gap-2">
-                    <Button
-                      onClick={handleAIAnalysis}
-                      className="flex items-center gap-2"
+                    <h3 className="text-xl font-semibold flex items-center">
+                      {selectedStock?.symbol}
+                      <span className="ml-2 text-sm font-normal text-muted-foreground hidden sm:inline">
+                        {selectedStock?.name}
+                      </span>
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <Tabs
+                      value={activeTab}
+                      onValueChange={handleTabChange}
+                      className="w-full sm:w-auto"
                     >
-                      <FaRobot /> AI Analysis
-                    </Button>
+                      <TabsList>
+                        <TabsTrigger
+                          value="chart"
+                          className="flex items-center gap-1 text-[#35b0ab]"
+                        >
+                          <FaChartLine className="h-3.5 w-3.5" /> Chart
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="analysis"
+                          className="flex items-center gap-1 text-[#35b0ab]"
+                        >
+                          <FaRobot className="h-3.5 w-3.5" /> AI Analysis
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                      {/* Watchlist Button added for Mobile */}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowWatchlistModal(true)}
+                        className="md:hidden"
+                      >
+                        <Star className="h-4 w-4" />
+                      </Button>
+
+                      <Button variant="outline" size="icon" onClick={toggleFullscreen}>
+                        {isFullscreen ? (
+                          <Minimize2 className="h-4 w-4" />
+                        ) : (
+                          <Maximize2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 flex min-h-0">
-                  {/* Chart Section */}
-                  <div className="flex-1 min-w-0 p-4">
-                    <div className="h-full">
-                      <TradingChart symbol={selectedStock?.symbol} interval={interval} />
-                    </div>
+                <div className="flex-1 flex flex-col md:flex-row min-h-0">
+                  <div className="flex-1 min-w-0 p-4 overflow-hidden">
+                    {/* Intervals , Chart and AI Analysis Tabs */}
+                    <Tabs value={activeTab} className="h-full">
+                      {/* Intervals and Chart */}
+                      <TabsContent value="chart" className="h-full p-0 m-0 border-none">
+                        <div className="flex flex-col h-full">
+                          <div className="flex items-center justify-between p-2 bg-card/50">
+                            <div className="flex gap-2">
+                              {intervals.map((int) => (
+                                <Button
+                                  key={int.value}
+                                  size="sm"
+                                  variant={interval === int.value ? "default" : "outline"}
+                                  onClick={() => handleIntervalChange(int.value)}
+                                  className="text-xs"
+                                >
+                                  {int.label}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex-1 p-0">
+                            <TradingChart
+                              symbol={selectedStock?.symbol}
+                              interval={interval}
+                              ref={chartRef}
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      {/* AI Analysis Tab */}
+                      <TabsContent
+                        value="analysis"
+                        className="h-full p-4 overflow-hidden"
+                      >
+                        {analysisLoading ? (
+                          <StepLoader
+                            currentStep={loadingStep}
+                            isLoading={analysisLoading}
+                          />
+                        ) : analysis ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="space-y-6"
+                          >
+                            <div className="bg-card/50 p-6 rounded-xl border border-primary/10">
+                              <h3 className="text-xl font-bold mb-4">
+                                AI Analysis for {selectedStock?.symbol}
+                              </h3>
+                              <div
+                                className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted-foreground"
+                                dangerouslySetInnerHTML={{
+                                  __html: (typeof analysis.suggestion === "string"
+                                    ? analysis.suggestion
+                                    : analysis.suggestion.suggestion
+                                  )
+                                    .replace(/--- START ANALYSIS FORMAT ---\n?/g, "")
+                                    .replace(/--- END FORMAT ---\n?/g, "")
+                                    .replace(/\n/g, "<br/>")
+                                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                                    .replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                                }}
+                              />
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                            <FaRobot className="h-16 w-16 mb-4 opacity-20" />
+                            <p>Select a stock and click "AI Analysis" to get started</p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
                   </div>
 
-                  {/* Watchlist Sidebar */}
-                  <div className="w-80 border-l bg-muted/10 p-4 overflow-y-auto">
-                    <h3 className="text-lg font-semibold mb-4">Watchlist</h3>
+                  {/* Hide watchlist sidebar on mobile */}
+                  <div className="hidden md:block w-80 border-l bg-muted/10 p-4 overflow-y-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Watchlist</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => dispatch(getWatchlist())}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Display Watchlist */}
                     {watchlistLoading ? (
                       <div className="flex justify-center">
                         <Loader />
                       </div>
-                    ) : (
+                    ) : watchlist.length > 0 ? (
                       <div className="space-y-2">
                         {watchlist.map((stock) => (
-                          <div
+                          <motion.div
                             key={stock.symbol}
-                            className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
                               selectedStock?.symbol === stock.symbol
-                                ? "bg-primary/10"
-                                : "hover:bg-muted/50"
+                                ? "bg-primary/10 border border-primary/20"
+                                : "hover:bg-muted/50 border border-transparent"
                             }`}
                             onClick={() => setSelectedStock(stock)}
                           >
                             <div>
                               <div className="font-medium">{stock.symbol}</div>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-xs text-muted-foreground truncate">
                                 {stock.name}
                               </div>
                             </div>
@@ -214,10 +447,21 @@ const Dashboard = () => {
                                 handleWatchlistToggle(stock);
                               }}
                             >
-                              <FaChartLine className="h-4 w-4" />
+                              {isStockInWatchlist(stock.symbol) ? (
+                                <FaChartLine className="h-4 w-4 text-primary" />
+                              ) : (
+                                <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                              )}
                             </Button>
-                          </div>
+                          </motion.div>
                         ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No stocks in watchlist</p>
+                        <p className="text-sm mt-2">
+                          Click the star icon on stocks to add them
+                        </p>
                       </div>
                     )}
                   </div>
@@ -227,33 +471,13 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* AI Analysis Modal - Default width */}
+        {/* Add Watchlist Modal */}
         <AnimatePresence>
-          {showAnalysisModal && (
-            <Modal isOpen={showAnalysisModal} onClose={() => setShowAnalysisModal(false)}>
-              <h3 className="text-lg font-semibold mb-4">
-                AI Analysis for {selectedStock?.symbol}
-              </h3>
-              {analysisLoading ? (
-                <StepLoader currentStep={loadingStep} isLoading={analysisLoading} />
-              ) : analysis?.suggestion ? (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (typeof analysis.suggestion === "string"
-                      ? analysis.suggestion
-                      : analysis.suggestion.suggestion
-                    )
-                      .replace(/--- START ANALYSIS FORMAT ---\n?/g, "")
-                      .replace(/--- END FORMAT ---\n?/g, "")
-                      .replace(/\n/g, "<br/>")
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\*(.*?)\*/g, "<em>$1</em>"),
-                  }}
-                />
-              ) : (
-                <div className="text-muted-foreground">No analysis data available</div>
-              )}
-            </Modal>
+          {showWatchlistModal && (
+            <WatchlistModal
+              isOpen={showWatchlistModal}
+              onClose={() => setShowWatchlistModal(false)}
+            />
           )}
         </AnimatePresence>
       </motion.div>

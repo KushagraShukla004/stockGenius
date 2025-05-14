@@ -34,6 +34,9 @@ const aiSlice = createSlice({
   reducers: {
     clearAnalysis: (state) => {
       state.analysis = null;
+      state.loading = false;
+      state.loadingStep = 0;
+      state.error = null;
     },
     setLoadingStep: (state, action) => {
       state.loadingStep = action.payload;
@@ -45,6 +48,7 @@ const aiSlice = createSlice({
         state.loading = true;
         state.loadingStep = 0;
         state.error = null;
+        state.analysis = null; // Clear previous analysis when loading new one
       })
       .addCase(getAIAnalysis.fulfilled, (state, action) => {
         state.analysis = action.payload;
