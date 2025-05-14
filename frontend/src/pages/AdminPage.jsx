@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import UsersTable from "@/components/admin/UsersTable";
 import { allUsers } from "@/store/slices/adminSlice";
 import { Toaster } from "sonner";
-import { motion } from "motion/react";
-import { Users, UserCheck, TrendingUp, Activity, Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { Users, UserCheck, TrendingUp, Activity, Search, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const AdminPage = () => {
   const dispatch = useDispatch();
@@ -16,6 +17,7 @@ const AdminPage = () => {
   const [adminCount, setAdminCount] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
   const [userGrowth, setUserGrowth] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch users when component mounts
   useEffect(() => {
@@ -44,23 +46,58 @@ const AdminPage = () => {
     setSearchTerm(e.target.value);
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await dispatch(
+      allUsers({
+        page: 1,
+        limit: 10,
+        search: searchTerm,
+      })
+    );
+    setTimeout(() => setIsRefreshing(false), 800); // Add a slight delay for animation
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-7xl">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: {
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
       >
-        <h1 className="text-3xl font-bold mb-6 gradient-text">Admin Dashboard</h1>
+        <motion.div
+          variants={fadeInUp}
+          transition={{ duration: 0.5 }}
+          className="flex justify-between items-center mb-6"
+        >
+          <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
+          <Button
+            onClick={handleRefresh}
+            variant="gradientOutline"
+            className="hover:bg-[#35b0ab]/10"
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </motion.div>
 
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card className="bg-card border-primary/10 card-hover">
+          <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+            <Card className="bg-card border-[#35b0ab]/10 card-hover overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-[#35b0ab]/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Users
@@ -69,23 +106,20 @@ const AdminPage = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">{totalUsers}</div>
-                  <div className="p-2 bg-primary/10 rounded-full">
-                    <Users className="h-5 w-5 text-primary" />
+                  <div className="p-2 bg-[#35b0ab]/10 rounded-full">
+                    <Users className="h-5 w-5 text-[#35b0ab]" />
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  <span className="text-accent">+{userGrowth}%</span> from last month
+                  <span className="text-[#4ecac5]">+{userGrowth}%</span> from last month
                 </p>
               </CardContent>
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card className="bg-card border-secondary/10 card-hover">
+          <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+            <Card className="bg-card border-secondary/10 card-hover overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Admin Users
@@ -105,12 +139,9 @@ const AdminPage = () => {
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card className="bg-card border-accent/10 card-hover">
+          <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+            <Card className="bg-card border-accent/10 card-hover overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-accent/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Active Users
@@ -130,12 +161,9 @@ const AdminPage = () => {
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Card className="bg-card border-primary/10 card-hover">
+          <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+            <Card className="bg-card border-primary/10 card-hover overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   User Growth
@@ -157,7 +185,11 @@ const AdminPage = () => {
         </div>
 
         {/* Search and Filter */}
-        <div className="mb-6">
+        <motion.div
+          variants={fadeInUp}
+          transition={{ duration: 0.5 }}
+          className="mb-6 bg-card/30 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-lg"
+        >
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -165,18 +197,21 @@ const AdminPage = () => {
               placeholder="Search users by name or email..."
               value={searchTerm}
               onChange={handleSearch}
-              className="pl-10 bg-card border-muted"
+              className="pl-10 bg-card border-muted hover-float"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Users Table */}
-        <UsersTable
-          data={users}
-          loading={loading}
-          totalUsers={totalUsers}
-          currentPage={currentPage}
-        />
+        <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+          <UsersTable
+            data={users}
+            // Changing boolean(loading) value to sting due to custom HTML attribute should be passed as string
+            loading={loading ? "true" : undefined}
+            totalUsers={totalUsers}
+            currentPage={currentPage}
+          />
+        </motion.div>
       </motion.div>
       <Toaster position="top-right" />
     </div>
