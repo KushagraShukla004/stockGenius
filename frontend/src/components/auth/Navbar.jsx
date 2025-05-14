@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
 import { Menu, X, TrendingUp, User, LogOut, BarChart3, Shield } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const menuVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -73,7 +73,7 @@ const Navbar = () => {
               to="/"
               className="flex items-center text-primary text-2xl md:text-3xl font-bold tracking-wide hover:opacity-90 transition-opacity"
             >
-              <TrendingUp className="mr-2 h-7 w-7" />
+              <img src="/assets/Logo256x256.ico" className="mr-2 size-10" />
               <span className="gradient-text">StockGenius</span>
             </Link>
 
@@ -85,7 +85,7 @@ const Navbar = () => {
                     variant={isActiveRoute(link.to) ? "default" : "ghost"}
                     className={`text-sm font-semibold transition-all ${
                       isActiveRoute(link.to)
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-accent-fg"
                         : "hover:bg-primary/10 hover:text-primary"
                     }`}
                   >
@@ -107,7 +107,7 @@ const Navbar = () => {
                 <Link to="/auth">
                   <Button
                     variant="default"
-                    className="text-sm font-semibold bg-primary hover:bg-primary/90 transition-colors ml-2"
+                    className="text-sm font-semibold bg-primary hover:bg-primary/90 text-accent-fg transition-colors ml-2"
                   >
                     Get Started
                   </Button>
@@ -177,8 +177,8 @@ const Navbar = () => {
                       onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center px-4 py-3 rounded-md text-sm font-medium transition-colors ${
                         isActiveRoute(link.to)
-                          ? "bg-primary text-white"
-                          : "text-foreground hover:bg-primary/10 hover:text-primary"
+                          ? "bg-primary text-black"
+                          : "hover:bg-primary/10 hover:text-primary"
                       }`}
                     >
                       {link.icon}

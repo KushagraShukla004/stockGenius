@@ -75,7 +75,6 @@
     @apply text-foreground;
   }
   .selected-row td {
-    /* background-color: rgba(241, 58, 177, 0.15) !important; primary with opacity */
     background-color: rgba(0, 243, 255, 0.15) !important;
     position: relative;
     z-index: 1;
@@ -85,11 +84,19 @@
     @apply w-full border border-gray-700 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300;
   }
   .btn-primary {
-    @apply bg-primary text-black font-semibold px-6 py-2 rounded-md hover:bg-primary/90 transition-all duration-300;
+    @apply bg-gradient-to-r from-[#298985] via-[#35b0ab] to-[#4ecac5] text-white font-semibold px-6 py-2 rounded-md hover:shadow-lg transition-all duration-300;
   }
   /* Gradient text utility */
   .gradient-text {
-    @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#35b0ab] via-[#4ecac5] to-[#75d6d2] bg-clip-text text-transparent;
+  }
+
+  .gradient-text-alt {
+    @apply bg-gradient-to-r from-[#298985] via-[#35b0ab] to-[#4ecac5] bg-clip-text text-transparent;
+  }
+
+  .gradient-text-light {
+    @apply bg-gradient-to-r from-[#4ecac5] via-[#75d6d2] to-[#e6e6e6] bg-clip-text text-transparent;
   }
 
   /* Card hover effects */
@@ -109,6 +116,13 @@
 }
 
 @layer utilities {
+  .section-stack {
+    @apply relative z-10;
+  }
+
+  .section-gradient {
+    @apply before:absolute before:inset-0 before:bg-gradient-to-b before:from-background/50 before:to-transparent before:z-0;
+  }
   .scale-up-top-normal {
     animation: scale-up-top-normal 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) 0s 1 normal
       both;
@@ -140,7 +154,7 @@
 
   /* Cyberpunk Glow Effect */
   .drop-shadow-neon {
-    filter: drop-shadow(0 0 3px rgba(0, 243, 255, 0.7));
+    filter: drop-shadow(0 0 3px rgba(53, 176, 171, 0.7));
   }
 
   @keyframes pulse-subtle {
@@ -185,6 +199,61 @@
     100% {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Button gradient styles */
+  .btn-gradient-primary {
+    @apply relative overflow-hidden bg-gradient-to-r from-[#298985] via-[#35b0ab] to-[#4ecac5] text-white font-semibold hover:shadow-lg transition-all duration-300;
+  }
+
+  .btn-gradient-secondary {
+    @apply relative overflow-hidden bg-gradient-to-r from-[#4ecac5] via-[#75d6d2] to-[#35b0ab] text-white font-semibold hover:shadow-lg transition-all duration-300;
+  }
+
+  .btn-gradient-outline {
+    @apply relative overflow-hidden border-2 border-[#35b0ab] bg-transparent hover:bg-gradient-to-r hover:from-[#35b0ab]/10 hover:via-[#4ecac5]/10 hover:to-[#75d6d2]/10 text-[#35b0ab] font-semibold transition-all duration-300;
+  }
+
+  /* Add glow effect for buttons */
+  .btn-glow:hover {
+    box-shadow: 0 0 15px rgba(53, 176, 171, 0.5);
+  }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #1e293b;
+  }
+
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
     }
   }
 }

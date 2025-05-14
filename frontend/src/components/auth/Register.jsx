@@ -1,9 +1,12 @@
-import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@/store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AlertCircle } from "lucide-react";
 
 const Register = ({ switchToLogin }) => {
   const dispatch = useDispatch();
@@ -32,90 +35,115 @@ const Register = ({ switchToLogin }) => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-foreground)] mb-6 text-center">Register</h2>
-      {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
+      <h2 className="text-2xl font-bold text-foreground mb-6">Create an account</h2>
+
+      {error && (
+        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-center text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
       <Formik
         initialValues={{ name: "", email: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ isSubmitting }) => (
-          <Form>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium text-foreground">
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="space-y-4">
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium text-foreground">
                 Full Name
-              </label>
+              </Label>
               <Field
+                as={Input}
                 name="name"
                 type="text"
                 id="name"
-                className="mt-1 p-2 w-full bg-input border border-slate-200 rounded-md text-foreground placeholder-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="John Doe"
+                className={`mt-1 w-full ${
+                  errors.name && touched.name
+                    ? "border-destructive ring-destructive/50"
+                    : ""
+                }`}
               />
               <ErrorMessage
                 name="name"
                 component="div"
-                className="text-red-500 text-sm mt-1"
+                className="text-destructive text-sm mt-1"
               />
             </div>
 
-            <div className="mb-4">
-              <label
+            <div>
+              <Label
                 htmlFor="registerEmail"
-                className="block text-sm font-medium text-foreground"
+                className="text-sm font-medium text-foreground"
               >
                 Email Address
-              </label>
+              </Label>
               <Field
+                as={Input}
                 name="email"
                 type="email"
                 id="registerEmail"
                 placeholder="you@example.com"
-                className="mt-1 p-2 w-full bg-input border border-slate-200 rounded-md text-foreground placeholder-white focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`mt-1 w-full ${
+                  errors.email && touched.email
+                    ? "border-destructive ring-destructive/50"
+                    : ""
+                }`}
               />
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-red-500 text-sm mt-1"
+                className="text-destructive text-sm mt-1"
               />
             </div>
 
-            <div className="mb-6">
-              <label
+            <div>
+              <Label
                 htmlFor="registerPassword"
-                className="block text-sm font-medium text-foreground"
+                className="text-sm font-medium text-foreground"
               >
                 Password
-              </label>
+              </Label>
               <Field
+                as={Input}
                 name="password"
                 type="password"
                 id="registerPassword"
-                className="mt-1 p-2 w-full bg-input border border-slate-200 rounded-md text-foreground placeholder-white focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`mt-1 w-full ${
+                  errors.password && touched.password
+                    ? "border-destructive ring-destructive/50"
+                    : ""
+                }`}
               />
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-red-500 text-sm mt-1"
+                className="text-destructive text-sm mt-1"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting || loading}
-              className="w-full bg-primary text-white px-4 py-2 font-bold rounded-md hover:opacity-80 transition duration-200"
-            >
-              {isSubmitting || loading ? "Registering..." : "Register"}
-            </button>
+            <Button type="submit" disabled={isSubmitting || loading} className="w-full">
+              {isSubmitting || loading ? "Creating account..." : "Sign up"}
+            </Button>
           </Form>
         )}
       </Formik>
-      <p className="text-sm text-foreground text-center mt-4">
-        Already have an account? Click on{" "}
-        <button type="button" onClick={switchToLogin} className="text-primary underline">
-          Login
-        </button>{" "}
-        Tab
-      </p>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={switchToLogin}
+            className="text-primary font-medium hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
     </div>
   );
 };

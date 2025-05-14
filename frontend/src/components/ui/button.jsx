@@ -1,5 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
@@ -10,15 +8,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+        default: "bg-primary text-primary-fg shadow-sm hover:bg-primary/90",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 focus-visible:ring-destructive/30",
+          "bg-destructive text-destructive-fg shadow-sm hover:bg-destructive/90 focus-visible:ring-destructive/30",
         outline:
           "border border-input bg-background text-foreground shadow-sm hover:bg-muted hover:text-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        secondary: "bg-secondary text-secondary-fg shadow-sm hover:bg-secondary/80",
         ghost: "text-muted-fg hover:text-foreground hover:bg-muted",
         link: "text-primary underline underline-offset-4 hover:text-accent",
+        gradient: "btn-gradient-primary btn-glow",
+        gradientSecondary: "btn-gradient-secondary btn-glow",
+        gradientOutline: "btn-gradient-outline",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -46,4 +46,5 @@ function Button({ className, variant, size, asChild = false, ...props }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };
