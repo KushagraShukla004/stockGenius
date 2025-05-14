@@ -12,51 +12,79 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleRealtimeUpdate = useCallback((newCandle) => {
-    console.log(newCandle);
-    if (!candlestickSeriesRef.current) return;
+  const handleRealtimeUpdate = useCallback(
+    (newCandle) => {
+      if (!candlestickSeriesRef.current) return;
 
-    setData((prevData) => {
-      const lastCandle = prevData[prevData.length - 1];
+      // Store current visible range before update
+      const currentVisibleRange = chartRef.current?.timeScale().getVisibleLogicalRange();
 
-      if (lastCandle && Math.floor(lastCandle.time) === Math.floor(newCandle.time)) {
-        // Update existing candle
-        const updatedCandle = {
-          ...lastCandle,
-          high: Math.max(lastCandle.high, newCandle.close),
-          low: Math.min(lastCandle.low, newCandle.close),
-          close: newCandle.close,
-        };
-        candlestickSeriesRef.current.update(updatedCandle);
-        return [...prevData.slice(0, -1), updatedCandle];
-      } else {
+      setData((prevData) => {
+        if (!prevData.length) return [newCandle];
+
+        const lastCandle = prevData[prevData.length - 1];
+        const intervalSeconds = getIntervalSeconds(interval);
+
+        // Update existing candle if it's in the same interval
+        if (
+          Math.floor(lastCandle.time / intervalSeconds) ===
+          Math.floor(newCandle.time / intervalSeconds)
+        ) {
+          const updatedCandle = {
+            ...lastCandle,
+            high: Math.max(lastCandle.high, newCandle.close),
+            low: Math.min(lastCandle.low, newCandle.close),
+            close: newCandle.close,
+            volume: (lastCandle.volume || 0) + (newCandle.volume || 0),
+          };
+          candlestickSeriesRef.current.update(updatedCandle);
+          return [...prevData.slice(0, -1), updatedCandle];
+        }
+
         // Add new candle
         candlestickSeriesRef.current.update(newCandle);
+
+        // Restore visible range after update
+        if (currentVisibleRange) {
+          setTimeout(() => {
+            chartRef.current?.timeScale().setVisibleLogicalRange(currentVisibleRange);
+          }, 0);
+        }
+
         return [...prevData, newCandle];
-      }
-    });
-  }, []);
+      });
+    },
+    [interval]
+  );
 
   // Use the WebSocket hook
-  useFinnhubWebSocket(symbol, handleRealtimeUpdate);
+  useFinnhubWebSocket(symbol, handleRealtimeUpdate, interval);
 
   const fetchAlphaVantageData = useCallback(async () => {
     try {
       const res = await fetch(`/api/stocks/${symbol}/candles?interval=${interval}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
 
       const raw = await res.json();
-      if (!Array.isArray(raw)) throw new Error("Invalid data format");
+      if (!Array.isArray(raw) || raw.length === 0) {
+        throw new Error("No data available for this interval");
+      }
 
-      return raw.map((item) => ({
-        time: Math.floor(new Date(item.date).getTime() / 1000),
-        open: item.open,
-        high: item.high,
-        low: item.low,
-        close: item.close,
-      }));
+      return raw
+        .map((item) => ({
+          time: new Date(item.date).getTime() / 1000,
+          open: parseFloat(item.open),
+          high: parseFloat(item.high),
+          low: parseFloat(item.low),
+          close: parseFloat(item.close),
+          volume: parseInt(item.volume),
+        }))
+        .sort((a, b) => a.time - b.time);
     } catch (err) {
-      console.error("Failed to fetch Alpha Vantage data", err);
+      console.error("Failed to fetch Alpha Vantage data:", err);
       throw err;
     }
   }, [symbol, interval]);
@@ -87,37 +115,102 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
-      layout: { background: { color: "#0f172a" }, textColor: "#cbd5e1" },
-      grid: {
-        vertLines: { color: "#334155" },
-        horzLines: { color: "#334155" },
+      layout: {
+        background: { type: "solid", color: "#0f172a" },
+        textColor: "#cbd5e1",
+        fontSize: 12,
+        fontFamily: "Inter, sans-serif",
       },
-      crosshair: { mode: CrosshairMode.Normal },
+      grid: {
+        vertLines: { color: "#1e293b", style: 1 },
+        horzLines: { color: "#1e293b", style: 1 },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: {
+          color: "#475569",
+          width: 1,
+          style: 1,
+          labelBackgroundColor: "#475569",
+        },
+        horzLine: {
+          color: "#475569",
+          width: 1,
+          style: 1,
+          labelBackgroundColor: "#475569",
+        },
+      },
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
+        borderColor: "#334155",
+        textColor: "#cbd5e1",
+        fixLeftEdge: true,
+        fixRightEdge: true,
+        rightOffset: 12, // Add some space on the right
+        barSpacing: 12, // Consistent bar spacing
+        tickMarkFormatter: (time) => {
+          const date = new Date(time * 1000);
+          const hours = date.getHours().toString().padStart(2, "0");
+          const minutes = date.getMinutes().toString().padStart(2, "0");
+          return `${hours}:${minutes}`;
+        },
+      },
+      rightPriceScale: {
+        borderColor: "#334155",
+        scaleMargins: { top: 0.2, bottom: 0.2 },
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
+      handleScale: {
+        mouseWheel: true,
+        pinch: true,
       },
     });
 
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#16a34a",
-      downColor: "#dc2626",
+      upColor: "#22c55e",
+      downColor: "#ef4444",
       borderVisible: false,
-      wickUpColor: "#16a34a",
-      wickDownColor: "#dc2626",
+      wickUpColor: "#22c55e",
+      wickDownColor: "#ef4444",
+      priceFormat: {
+        type: "price",
+        precision: 2,
+        minMove: 0.01,
+      },
     });
 
     candlestickSeries.setData(data);
     chartRef.current = chart;
     candlestickSeriesRef.current = candlestickSeries;
 
+    // Set visible range to last 100 candles
+    const timeRange = {
+      from: data[Math.max(0, data.length - 100)].time,
+      to: data[data.length - 1].time + getIntervalSeconds(interval) * 10, // Add some future space
+    };
+    chart.timeScale().setVisibleRange(timeRange);
+
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {
+        // Store current visible range
+        const currentVisibleRange = chartRef.current.timeScale().getVisibleLogicalRange();
+
+        // Apply new dimensions
         chartRef.current.applyOptions({
           width: chartContainerRef.current.clientWidth,
           height: chartContainerRef.current.clientHeight,
         });
-        chartRef.current.timeScale().fitContent();
+
+        // Restore visible range
+        if (currentVisibleRange) {
+          chartRef.current.timeScale().setVisibleLogicalRange(currentVisibleRange);
+        }
       }
     };
 
@@ -137,7 +230,7 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
       }
       chart.remove();
     };
-  }, [data]);
+  }, [data, interval]);
 
   return (
     <div className="w-full h-full relative">
@@ -154,6 +247,22 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
       <div ref={chartContainerRef} className="w-full h-full" />
     </div>
   );
+};
+
+// Helper function to get interval seconds
+const getIntervalSeconds = (interval) => {
+  switch (interval) {
+    case "1min":
+      return 60;
+    case "5min":
+      return 300;
+    case "15min":
+      return 900;
+    case "1D":
+      return 86400;
+    default:
+      return 300;
+  }
 };
 
 export default TradingChart;
