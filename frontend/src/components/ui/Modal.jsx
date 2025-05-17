@@ -39,7 +39,7 @@ const Modal = ({ isOpen, onClose, children, className }) => {
           >
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 p-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-fg hover:text-foreground transition-colors"
               aria-label="Close modal"
             >
               <X className="h-4 w-4" />

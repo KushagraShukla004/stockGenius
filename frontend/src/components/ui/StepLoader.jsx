@@ -4,18 +4,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import Loader from "./Loader";
 
 const steps = [
-  "AI is getting ready",
-  "AI is fetching the data",
-  "AI is analyzing stock data",
-  "AI is forming the report",
+  "A\u00A0I is getting ready",
+  "A\u00A0I is fetching the data",
+  "A\u00A0I is analyzing stock data",
+  "A\u00A0I is forming the report",
 ];
 
-const StepLoader = ({ currentStep = 0, isLoading = true }) => {
+const StepLoader = ({ currentStep = 0, isLoading = true, debug = false }) => {
   const [displayStep, setDisplayStep] = useState(currentStep);
 
   useEffect(() => {
     setDisplayStep(currentStep);
   }, [currentStep]);
+
+  // debugging for auto-stepping
+  useEffect(() => {
+    if (debug) {
+      const timer = setInterval(() => {
+        setDisplayStep((prev) => (prev + 1) % steps.length);
+      }, 3000); // Change step every 3 seconds
+      return () => clearInterval(timer);
+    }
+  }, [debug]);
 
   if (!isLoading) return null;
 
@@ -140,7 +150,7 @@ const TypewriterEffect = ({ text }) => {
   }, [text]);
 
   return (
-    <div className="font-mono text-lg text-white">
+    <div className="font-mono text-lg text-white tracking-wider font-medium">
       {displayText}
       <motion.span
         animate={{ opacity: [1, 0, 1] }}
