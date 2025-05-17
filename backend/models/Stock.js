@@ -5,7 +5,6 @@ const stockSchema = new mongoose.Schema({
   name: String,
   sector: String,
   industry: String,
-  logoUrl: String, // optional
   marketCap: Number,
   peRatio: Number,
   updatedAt: { type: Date, default: Date.now },

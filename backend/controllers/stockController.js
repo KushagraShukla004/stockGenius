@@ -130,29 +130,46 @@ export const getCandlestickData = async (req, res) => {
   const { interval = "1D" } = req.query;
   const upperSymbol = symbol.toUpperCase();
 
-  const cacheKey = `stock:candles:${upperSymbol}:${interval}`;
-
   try {
+    const cacheKey = `stock:candles:${upperSymbol}:${interval}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
     let raw, timeSeries;
 
+    // Fix: Proper interval handling
     if (interval === "1D") {
       raw = await getDailyCandlesticks(upperSymbol);
       timeSeries = raw["Time Series (Daily)"];
     } else {
-      // Convert interval format if needed (e.g., "5min" to "5")
-      const formattedInterval = interval.replace("min", "");
+      // Fix: Proper interval formatting for intraday
+      const intervalMap = {
+        "1min": "1min",
+        "5min": "5min",
+        "15min": "15min",
+      };
+
+      const formattedInterval = intervalMap[interval];
+      if (!formattedInterval) {
+        return res.status(400).json({
+          error: "Invalid interval. Supported intervals: 1min, 5min, 15min, 1D",
+        });
+      }
+
       raw = await getIntradayCandlesticks(upperSymbol, formattedInterval);
-      timeSeries = raw[`Time Series (${formattedInterval}min)`];
+      timeSeries = raw[`Time Series (${formattedInterval})`];
     }
 
     if (!timeSeries || Object.keys(timeSeries).length === 0) {
-      console.error("No data received for", symbol, interval, raw);
-      return res
-        .status(404)
-        .json({ error: "Data not available. Try again later or check interval." });
+      console.error("No data received:", {
+        symbol,
+        interval,
+        response: raw,
+      });
+      return res.status(404).json({
+        error: "No data available for this interval",
+        details: raw["Error Message"] || "Try again later",
+      });
     }
 
     const transformed = Object.entries(timeSeries)
@@ -169,13 +186,14 @@ export const getCandlestickData = async (req, res) => {
     await setCache(cacheKey, transformed, 300);
     res.json(transformed);
   } catch (err) {
-    console.error("Error fetching candlesticks:", err.message);
+    console.error("Candlestick Error:", err);
     res.status(500).json({
-      error: "Failed to fetch candlestick data.",
+      error: "Failed to fetch candlestick data",
       details: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
+
 // Get current price with caching
 export const getStockPriceData = async (req, res) => {
   const { symbol } = req.params;
@@ -189,7 +207,6 @@ export const getStockPriceData = async (req, res) => {
       return res.status(200).json({
         success: true,
         fromCache: true,
-        // webSocketBroadcasted: false,
         data: cached,
       });
     }
@@ -206,14 +223,10 @@ export const getStockPriceData = async (req, res) => {
     // Update cache
     await setCache(cacheKey, stockData, 300); // Cache for 5 minutes
 
-    // Broadcast real-time update
-    // broadcastPriceUpdate(upperSymbol, stockData);
-
     // response
     res.status(200).json({
       success: true,
       fromCache: false,
-      // webSocketBroadcasted: true,
       data: stockData,
     });
   } catch (err) {
