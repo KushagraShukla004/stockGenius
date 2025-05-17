@@ -40,7 +40,10 @@
 
 :root {
   --font-quicksand: "Quicksand", system-ui, sans-serif;
+  --radius: 0.75rem;
+}
 
+.dark {
   --background: #0a0a0f;
   --foreground: #e0e0ff;
 
@@ -60,32 +63,128 @@
   --muted-foreground: #9090a0;
 
   --destructive: #ff1744;
+  --destructive-foreground: #ffffff;
+
+  --border: #252535;
   --input: #252535;
   --ring: #00f3ff;
+}
 
-  --radius: 0.75rem;
+.light {
+  --background: #fafcff;
+  --foreground: #0a0f29;
+
+  --card: #ffffff;
+  --card-foreground: #0a0f29;
+
+  --popover: #ffffff;
+  --popover-foreground: #0a0f29;
+
+  --primary: #0090ed;
+  --primary-foreground: #fafcff;
+
+  --secondary: #ff8534;
+  --secondary-foreground: #fafcff;
+
+  --muted: #f1f5fe;
+  --muted-foreground: #646b82;
+
+  --accent: #f1f5fe;
+  --accent-foreground: #1c2439;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fafcff;
+
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0a0f29;
+
+  --radius: 0.5rem;
+}
+
+.royal {
+  --background: #0a0a1a;
+  --foreground: #f0f0ff;
+
+  --card: #15152a;
+  --card-foreground: #f0f0ff;
+
+  --popover: #0a0a1a;
+  --popover-foreground: #f0f0ff;
+
+  --primary: #6a5acd;
+  --primary-foreground: #ffffff;
+
+  --secondary: #9370db;
+  --secondary-foreground: #000000;
+
+  --muted: #252540;
+  --muted-foreground: #a0a0c0;
+
+  --accent: #483d8b;
+  --accent-foreground: #f0f0ff;
+
+  --destructive: #8b0000;
+  --destructive-foreground: #f0f0ff;
+
+  --border: #252540;
+  --input: #252540;
+  --ring: #6a5acd;
+}
+
+.emerald {
+  --background: #213947;
+  --foreground: #e0f7fa;
+
+  --card: #2a4758;
+  --card-foreground: #e0f7fa;
+
+  --popover: #213947;
+  --popover-foreground: #e0f7fa;
+
+  --primary: #41c791;
+  --primary-foreground: #213947;
+
+  --secondary: #38b2ac;
+  --secondary-foreground: #e0f7fa;
+
+  --muted: #325261;
+  --muted-foreground: #a0bcc5;
+
+  --accent: #319795;
+  --accent-foreground: #e0f7fa;
+
+  --destructive: #e53e3e;
+  --destructive-foreground: #e0f7fa;
+
+  --border: #325261;
+  --input: #325261;
+  --ring: #41c791;
 }
 
 @layer base {
+  :root {
+    --theme-transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
+      color 0.3s ease-in-out;
+  }
+
   * {
-    @apply border-slate-700 outline-ring/50;
-    font-family: var(--font-quicksand);
+    /* @apply border-border; */
+    transition: var(--theme-transition);
   }
+
   body {
-    @apply text-foreground;
+    @apply bg-background text-foreground;
+    transition: var(--theme-transition);
   }
+
   .selected-row td {
     background-color: rgba(0, 243, 255, 0.15) !important;
     position: relative;
     z-index: 1;
     box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.1);
   }
-  .input-style {
-    @apply w-full border border-gray-700 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300;
-  }
-  .btn-primary {
-    @apply bg-gradient-to-r from-[#298985] via-[#35b0ab] to-[#4ecac5] text-white font-semibold px-6 py-2 rounded-md hover:shadow-lg transition-all duration-300;
-  }
+
   /* Gradient text utility */
   .gradient-text {
     @apply bg-gradient-to-r from-[#35b0ab] via-[#4ecac5] to-[#75d6d2] bg-clip-text text-transparent;
@@ -93,10 +192,6 @@
 
   .gradient-text-alt {
     @apply bg-gradient-to-r from-[#298985] via-[#35b0ab] to-[#4ecac5] bg-clip-text text-transparent;
-  }
-
-  .gradient-text-light {
-    @apply bg-gradient-to-r from-[#4ecac5] via-[#75d6d2] to-[#e6e6e6] bg-clip-text text-transparent;
   }
 
   /* Card hover effects */
@@ -108,26 +203,9 @@
   .bg-gradient-radial {
     background-image: radial-gradient(var(--tw-gradient-stops));
   }
-
-  .neon-border {
-    border: 2px solid var(--primary);
-    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
-  }
 }
 
 @layer utilities {
-  .section-stack {
-    @apply relative z-10;
-  }
-
-  .section-gradient {
-    @apply before:absolute before:inset-0 before:bg-gradient-to-b before:from-background/50 before:to-transparent before:z-0;
-  }
-  .scale-up-top-normal {
-    animation: scale-up-top-normal 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) 0s 1 normal
-      both;
-  }
-
   /* New animations */
   .hover-float {
     transition: transform 0.3s ease;
@@ -135,10 +213,6 @@
 
   .hover-float:hover {
     transform: translateY(-4px);
-  }
-
-  .pulse-subtle {
-    animation: pulse-subtle 2s infinite;
   }
 
   .shimmer {
@@ -152,53 +226,12 @@
     animation: shimmer 2s infinite;
   }
 
-  /* Cyberpunk Glow Effect */
-  .drop-shadow-neon {
-    filter: drop-shadow(0 0 3px rgba(53, 176, 171, 0.7));
-  }
-
-  @keyframes pulse-subtle {
-    0% {
-      box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.4);
-    }
-    70% {
-      box-shadow: 0 0 0 6px rgba(0, 243, 255, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(0, 243, 255, 0);
-    }
-  }
-
   @keyframes shimmer {
     0% {
       background-position: 200% 0;
     }
     100% {
       background-position: -200% 0;
-    }
-  }
-
-  @keyframes scale-up-top-normal {
-    0% {
-      transform: scale(0.5);
-      transform-origin: 50% 0%;
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      transform-origin: 50% 0%;
-      opacity: 1;
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
     }
   }
 

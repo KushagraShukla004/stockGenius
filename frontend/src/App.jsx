@@ -1,3 +1,5 @@
+"use client";
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Toaster } from "sonner";
@@ -10,16 +12,19 @@ import NavbarLayout from "./components/auth/NavbarLayout";
 import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
 import { ConfigProvider } from "antd";
-import { theme } from "./theme/antd.config";
+import { useAntdTheme } from "./theme/antd.config";
 import { ParallaxProvider } from "react-scroll-parallax";
+import { useTheme } from "./components/theme/theme-provider";
 
 export default function App() {
   const { token } = useSelector((state) => state.auth);
+  const { theme: currentTheme } = useTheme();
+  const antdTheme = useAntdTheme();
 
   return (
     <ParallaxProvider>
-      <ConfigProvider theme={theme}>
-        <div className="min-h-screen bg-background dark:bg-background">
+      <ConfigProvider theme={antdTheme}>
+        <div className={`min-h-screen bg-background dark:bg-background ${currentTheme}`}>
           <Routes>
             {/* Routes with Navbar */}
             <Route element={<NavbarLayout />}>
