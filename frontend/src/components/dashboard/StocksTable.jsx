@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useMemo } from "react";
-import { Table, Input, Select, message } from "antd";
+import { Table, Input, Select } from "antd";
 import { Button } from "@/components/ui/button";
 import { Star, StarOff, Info } from "lucide-react";
 import { IoSearchOutline } from "react-icons/io5";
@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import debounce from "lodash.debounce";
 import { getAllStocks } from "@/store/slices/stockSlice";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/components/theme/theme-provider";
+import { getThemeColors } from "@/theme/antd.config";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -18,14 +20,14 @@ const { Option } = Select;
 const StocksTable = ({
   data = [],
   loading = false,
+  currentPage = 1,
   totalStocks = 0,
+  selectedStock = null,
   onStockSelect,
   onWatchlistToggle,
   isStockInWatchlist,
   sectors = [],
   industries = [],
-  selectedStock = null,
-  currentPage = 1,
   onShowChart,
   onShowAnalysis,
 }) => {
@@ -33,6 +35,8 @@ const StocksTable = ({
   const [searchText, setSearchText] = useState("");
   const [selectedSector, setSelectedSector] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("");
+  const { theme } = useTheme();
+  const themeColors = getThemeColors(theme);
   const [pagination, setPagination] = useState({
     current: currentPage,
     pageSize: 10,
@@ -109,16 +113,6 @@ const StocksTable = ({
     });
   };
 
-  // Error handling for stock selection
-  const handleStockClick = (record) => {
-    if (!record) {
-      message.error("Please select a valid stock");
-      return;
-    }
-    onStockSelect(record);
-    message.success(`Selected ${record.symbol}`);
-  };
-
   // Reset pagination when filters change
   useEffect(() => {
     setPagination((prev) => ({ ...prev, current: 1 }));
@@ -150,7 +144,6 @@ const StocksTable = ({
         <motion.div
           whileHover={{ scale: 1.05 }}
           className="cursor-pointer pl-2 font-bold whitespace-nowrap"
-          onClick={() => handleStockClick(record)}
         >
           {text}
           {isStockInWatchlist(record.symbol) && (
@@ -172,11 +165,10 @@ const StocksTable = ({
       width: "auto",
       ellipsis: true,
       fixed: "left",
-      render: (text, record) => (
+      render: (text) => (
         <motion.div
           whileHover={{ x: 3 }}
           className="cursor-pointer font-medium truncate max-w-[200px] sm:max-w-none"
-          onClick={() => onStockSelect(record)}
         >
           {text}
         </motion.div>
@@ -248,7 +240,7 @@ const StocksTable = ({
     >
       {/* Responsive Filters with Action Buttons */}
       <motion.div
-        className="bg-card/30 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-lg"
+        className={`bg-card/30 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-lg`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.3 }}
@@ -273,6 +265,7 @@ const StocksTable = ({
                 root: "bg-card border border-primary/20",
               },
             }}
+            popupClassName={`theme-${theme}-dropdown`}
           >
             {sectors.map((sector) => (
               <Option key={sector} value={sector}>
@@ -290,6 +283,7 @@ const StocksTable = ({
                 root: "bg-card border border-primary/20",
               },
             }}
+            popupClassName={`theme-${theme}-dropdown`}
           >
             {industries.map((industry) => (
               <Option key={industry} value={industry}>
@@ -321,7 +315,7 @@ const StocksTable = ({
                     {selectedStock.sector}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1 truncate max-w-[300px]">
+                <p className="text-sm text-muted-fg mt-1 truncate max-w-[300px]">
                   {selectedStock.name}
                 </p>
               </div>
@@ -369,18 +363,18 @@ const StocksTable = ({
             y: "calc(100vh - 350px)",
           }}
           rowKey="symbol"
-          size="small" // Changed from middle to small
-          className="bg-card rounded-xl shadow-xl border border-slate-700/30 overflow-hidden [&_.ant-table-cell]:!py-3" // Added padding adjustment
+          size="small"
+          className={`bg-card rounded-xl shadow-xl overflow-hidden [&_.ant-table-cell]:!py-3 theme-${theme}-table`}
           rowClassName={(record) =>
             selectedStock?.symbol === record.symbol
-              ? "selected-row shimmer"
-              : "hover:bg-slate-700/20"
+              ? `selected-row shimmer theme-${theme}-selected-row`
+              : `hover:bg-${themeColors.borderColor}/20 theme-${theme}-row`
           }
           sticky="true"
           tableLayout="fixed"
           onRow={(record) => ({
-            onClick: () => handleStockClick(record),
-            className: "cursor-pointer transition-all duration-300",
+            onClick: () => onStockSelect(record),
+            className: `cursor-pointer transition-all duration-300 theme-${theme}-table-row`,
           })}
           locale={{
             emptyText: (
@@ -389,9 +383,9 @@ const StocksTable = ({
                 animate={{ opacity: 1 }}
                 className="py-12 text-center"
               >
-                <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">No stocks found</p>
-                <p className="text-sm text-muted-foreground/70">
+                <Info className="h-12 w-12 text-muted-fg mx-auto mb-4 opacity-50" />
+                <p className="text-muted-fg">No stocks found</p>
+                <p className="text-sm text-foreground/70">
                   Try adjusting your search or filters
                 </p>
               </motion.div>

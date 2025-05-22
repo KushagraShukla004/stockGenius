@@ -32,7 +32,7 @@ const AuthPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="mt-4 text-lg text-muted-foreground"
+            className="mt-4 text-lg text-muted-fg"
           >
             One insight at a time. Let StockGenius AI decode the charts, fundamentals, and
             patterns for you.
@@ -82,9 +82,7 @@ const AuthPage = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold gradient-text">StockGenius</h2>
-            <p className="mt-2 text-muted-foreground">
-              Your AI-powered trading assistant
-            </p>
+            <p className="mt-2 text-muted-fg">Your AI-powered trading assistant</p>
           </div>
 
           <div className="bg-card shadow-lg rounded-xl p-8 border border-muted">
@@ -119,7 +117,7 @@ const AuthPage = () => {
             </Tabs>
           </div>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-fg">
             By continuing, you agree to StockGenius's Terms of Service and Privacy Policy.
           </p>
         </div>

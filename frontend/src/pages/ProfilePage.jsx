@@ -162,7 +162,7 @@ const ProfilePage = () => {
                     onChange={handleAvatarChange}
                     accept="image/*"
                   />
-                  <span className="text-xs">Edit</span>
+                  <span className="text-xs text-muted">Edit</span>
                 </label>
               </motion.div>
 
@@ -292,7 +292,7 @@ const ProfilePage = () => {
         {/* Delete Account Section */}
         <motion.section variants={fadeUp} className="space-y-4">
           <h2 className="text-3xl font-bold text-destructive">Delete Account</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted-fg">
             This action will permanently delete your account and all associated data.
           </p>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

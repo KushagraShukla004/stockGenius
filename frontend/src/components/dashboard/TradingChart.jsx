@@ -12,53 +12,28 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleRealtimeUpdate = useCallback(
-    (newCandle) => {
-      if (!candlestickSeriesRef.current) return;
+  const handleRealtimeUpdate = useCallback((newCandle) => {
+    if (!candlestickSeriesRef.current) return;
 
-      // Store current visible range before update
-      const currentVisibleRange = chartRef.current?.timeScale().getVisibleLogicalRange();
+    setData((prevData) => {
+      const lastIndex = prevData.findIndex((candle) => candle.time === newCandle.time);
 
-      setData((prevData) => {
-        if (!prevData.length) return [newCandle];
-
-        const lastCandle = prevData[prevData.length - 1];
-        const intervalSeconds = getIntervalSeconds(interval);
-
-        // Update existing candle if it's in the same interval
-        if (
-          Math.floor(lastCandle.time / intervalSeconds) ===
-          Math.floor(newCandle.time / intervalSeconds)
-        ) {
-          const updatedCandle = {
-            ...lastCandle,
-            high: Math.max(lastCandle.high, newCandle.close),
-            low: Math.min(lastCandle.low, newCandle.close),
-            close: newCandle.close,
-            volume: (lastCandle.volume || 0) + (newCandle.volume || 0),
-          };
-          candlestickSeriesRef.current.update(updatedCandle);
-          return [...prevData.slice(0, -1), updatedCandle];
-        }
-
-        // Add new candle
+      if (lastIndex === -1) {
+        // New candle
         candlestickSeriesRef.current.update(newCandle);
-
-        // Restore visible range after update
-        if (currentVisibleRange) {
-          setTimeout(() => {
-            chartRef.current?.timeScale().setVisibleLogicalRange(currentVisibleRange);
-          }, 0);
-        }
-
         return [...prevData, newCandle];
-      });
-    },
-    [interval]
-  );
+      } else {
+        // Update existing candle
+        const updatedData = [...prevData];
+        updatedData[lastIndex] = newCandle;
+        candlestickSeriesRef.current.update(newCandle);
+        return updatedData;
+      }
+    });
+  }, []);
 
-  // Use the WebSocket hook
-  useFinnhubWebSocket(symbol, handleRealtimeUpdate, interval);
+  // Add market status indicator
+  const marketStatus = useFinnhubWebSocket(symbol, handleRealtimeUpdate, interval);
 
   const fetchAlphaVantageData = useCallback(async () => {
     try {
@@ -234,6 +209,16 @@ const TradingChart = ({ symbol, interval = "1min" }) => {
 
   return (
     <div className="w-full h-full relative">
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+        <span
+          className={`h-2 w-2 rounded-full ${
+            marketStatus ? "bg-green-500" : "bg-red-500"
+          }`}
+        />
+        <span className="text-xs text-muted-fg">
+          {marketStatus ? "Market Open" : "Market Closed"}
+        </span>
+      </div>
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
           <Loader />

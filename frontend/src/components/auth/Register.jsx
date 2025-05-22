@@ -133,7 +133,7 @@ const Register = ({ switchToLogin }) => {
       </Formik>
 
       <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-fg">
           Already have an account?{" "}
           <button
             type="button"

@@ -37,7 +37,6 @@ const Dashboard = () => {
 
   const [selectedStock, setSelectedStock] = useState(null);
   const [showChartModal, setShowChartModal] = useState(false);
-  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [interval, setInterval] = useState("1min");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState("chart");
@@ -88,7 +87,7 @@ const Dashboard = () => {
     }
   }, [dispatch, selectedStock]);
 
-  // Add this new effect to watch for selectedStock changes
+  // useEffect to watch for selectedStock changes
   useEffect(() => {
     if (selectedStock && showChartModal && activeTab === "analysis") {
       handleAIAnalysis();
@@ -97,15 +96,17 @@ const Dashboard = () => {
 
   // Simplified handlers
   const handleStockSelect = useCallback(
-    (stock) => {
+    (stock, showToast = true) => {
       if (!stock) return toast.error("Please select a valid stock");
 
       if (selectedStock?.symbol !== stock.symbol) {
         dispatch(clearAnalysis());
         setSelectedStock(stock);
+        // Only show toast when explicitly selecting from table
+        if (showToast) {
+          toast.success(`Selected ${stock.symbol}`);
+        }
       }
-
-      toast.success(`Selected ${stock.symbol}`);
     },
     [dispatch, selectedStock]
   );
@@ -191,13 +192,13 @@ const Dashboard = () => {
                   : "hover:bg-muted/50 border border-transparent"
               }`}
               onClick={() => {
-                handleStockSelect(stock);
+                handleStockSelect(stock, false); // Pass false to prevent toast
                 onClose();
               }}
             >
               <div>
                 <div className="font-medium">{stock.symbol}</div>
-                <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+                <div className="text-xs text-muted-fg truncate">{stock.name}</div>
               </div>
               <Button
                 variant="ghost"
@@ -210,14 +211,14 @@ const Dashboard = () => {
                 {isStockInWatchlist(stock.symbol) ? (
                   <FaChartLine className="h-4 w-4 text-primary" />
                 ) : (
-                  <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                  <FaChartLine className="h-4 w-4 text-muted-fg" />
                 )}
               </Button>
             </motion.div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-8 text-muted-fg">
           <p>No stocks in watchlist</p>
           <p className="text-sm mt-2">Click the star icon on stocks to add them</p>
         </div>
@@ -242,10 +243,10 @@ const Dashboard = () => {
             totalPages={totalPages}
             sectors={sectors}
             industries={industries}
+            selectedStock={selectedStock}
             onStockSelect={handleStockSelect}
             onWatchlistToggle={handleWatchlistToggle}
             isStockInWatchlist={isStockInWatchlist}
-            selectedStock={selectedStock}
             // Action Buttons for Chart and AI Analysis
             onShowChart={handleShowChart}
             onShowAnalysis={handleAIAnalysis}
@@ -271,7 +272,7 @@ const Dashboard = () => {
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold flex items-center">
                       {selectedStock?.symbol}
-                      <span className="ml-2 text-sm font-normal text-muted-foreground hidden sm:inline">
+                      <span className="ml-2 text-sm font-normal text-muted-fg hidden sm:inline">
                         {selectedStock?.name}
                       </span>
                     </h3>
@@ -375,7 +376,7 @@ const Dashboard = () => {
                                 AI Analysis for {selectedStock?.symbol}
                               </h3>
                               <div
-                                className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted-foreground"
+                                className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted-fg"
                                 dangerouslySetInnerHTML={{
                                   __html: (typeof analysis.suggestion === "string"
                                     ? analysis.suggestion
@@ -391,7 +392,7 @@ const Dashboard = () => {
                             </div>
                           </motion.div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                          <div className="flex flex-col items-center justify-center h-full text-muted-fg">
                             <FaRobot className="h-16 w-16 mb-4 opacity-20" />
                             <p>Select a stock and click "AI Analysis" to get started</p>
                           </div>
@@ -431,11 +432,11 @@ const Dashboard = () => {
                                 ? "bg-primary/10 border border-primary/20"
                                 : "hover:bg-muted/50 border border-transparent"
                             }`}
-                            onClick={() => setSelectedStock(stock)}
+                            onClick={() => handleStockSelect(stock, false)} // Pass false to prevent toast
                           >
                             <div>
                               <div className="font-medium">{stock.symbol}</div>
-                              <div className="text-xs text-muted-foreground truncate">
+                              <div className="text-xs text-muted-fg truncate">
                                 {stock.name}
                               </div>
                             </div>
@@ -450,14 +451,14 @@ const Dashboard = () => {
                               {isStockInWatchlist(stock.symbol) ? (
                                 <FaChartLine className="h-4 w-4 text-primary" />
                               ) : (
-                                <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                                <FaChartLine className="h-4 w-4 text-muted-fg" />
                               )}
                             </Button>
                           </motion.div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-center py-8 text-muted-fg">
                         <p>No stocks in watchlist</p>
                         <p className="text-sm mt-2">
                           Click the star icon on stocks to add them

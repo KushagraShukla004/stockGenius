@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -11,10 +11,6 @@ import {
   ArrowRight,
   ChevronDown,
   TrendingUp,
-  Shield,
-  Zap,
-  BarChart,
-  PieChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SplashScreen from "@/components/ui/SplashScreen";
@@ -36,13 +32,13 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: <BarChart3 className="h-10 w-10 text-primary" />,
+      icon: <BarChart3 className="h-10 w-10 text-[#35b0ab]" />,
       title: "Real-time Market Data",
       description:
         "Access live stock prices, charts, and market indicators to make informed decisions.",
     },
     {
-      icon: <Bot className="h-10 w-10 text-accent" />,
+      icon: <Bot className="h-10 w-10 text-destructive" />,
       title: "AI-Powered Analysis",
       description:
         "Get personalized stock recommendations and insights powered by advanced AI algorithms.",
@@ -132,13 +128,6 @@ const LandingPage = () => {
   const toggleAccordion = (index) => {
     setActiveAccordion(activeAccordion === index ? null : index);
   };
-
-  const stats = [
-    { value: "98%", label: "Accuracy Rate", icon: <Shield className="h-6 w-6" /> },
-    { value: "24/7", label: "Market Monitoring", icon: <Zap className="h-6 w-6" /> },
-    { value: "10K+", label: "Active Users", icon: <BarChart className="h-6 w-6" /> },
-    { value: "50+", label: "Stocks Analyzed", icon: <PieChart className="h-6 w-6" /> },
-  ];
 
   return (
     <>

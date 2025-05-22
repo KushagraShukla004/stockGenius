@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
 import { Menu, X, TrendingUp, User, LogOut, BarChart3, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThemeSwitcher } from "../theme/theme-switcher";
 
 const menuVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -40,6 +41,18 @@ const Navbar = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20); // Reduced threshold to 20px
+    };
+
+    // Initial check
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
@@ -79,6 +92,9 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
+              <div className="ml-3">
+                <ThemeSwitcher />
+              </div>
               {navLinks.map((link) => (
                 <Link key={link.to} to={link.to}>
                   <Button
@@ -155,10 +171,10 @@ const Navbar = () => {
                   <Link
                     to="/"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center"
+                    className="flex items-center text-2xl font-bold tracking-wide hover:opacity-90 transition-opacity"
                   >
-                    <TrendingUp className="h-6 w-6 text-primary mr-2" />
-                    <span className="text-primary text-2xl font-bold">StockGenius</span>
+                    <img src="/assets/Logo256x256.ico" className="mr-2 size-10" />
+                    <span className="gradient-text">StockGenius</span>
                   </Link>
                   <button
                     onClick={() => setIsMenuOpen(false)}
@@ -167,6 +183,10 @@ const Navbar = () => {
                   >
                     <X className="h-6 w-6 text-foreground" />
                   </button>
+                </div>
+
+                <div className="mb-4">
+                  <ThemeSwitcher />
                 </div>
 
                 <div className="space-y-2">

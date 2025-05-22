@@ -3,11 +3,9 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useParallax } from "react-scroll-parallax";
 import { Button } from "@/components/ui/button";
-import { useSelector } from "react-redux";
 import { Shield, Zap, BarChart, PieChart } from "lucide-react";
 
 const HeroSection = ({ features }) => {
-  const { token } = useSelector((state) => state.auth);
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const featuresRef = useRef(null);
@@ -89,7 +87,7 @@ const HeroSection = ({ features }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={isHeroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg md:text-xl text-muted-foreground mb-8"
+          className="text-lg md:text-xl text-white mb-8"
         >
           Unlock the power of artificial intelligence to make smarter investment
           decisions. Get real-time market analysis, predictive insights, and personalized

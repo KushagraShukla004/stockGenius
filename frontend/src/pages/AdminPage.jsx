@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import UsersTable from "@/components/admin/UsersTable";
 import { allUsers } from "@/store/slices/adminSlice";
-import { Toaster } from "sonner";
 import { motion } from "framer-motion";
 import { Users, UserCheck, TrendingUp, Activity, Search, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,7 +98,7 @@ const AdminPage = () => {
             <Card className="bg-card border-[#35b0ab]/10 card-hover overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#35b0ab]/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-fg">
                   Total Users
                 </CardTitle>
               </CardHeader>
@@ -110,7 +109,7 @@ const AdminPage = () => {
                     <Users className="h-5 w-5 text-[#35b0ab]" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-fg mt-2">
                   <span className="text-[#4ecac5]">+{userGrowth}%</span> from last month
                 </p>
               </CardContent>
@@ -121,7 +120,7 @@ const AdminPage = () => {
             <Card className="bg-card border-secondary/10 card-hover overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-fg">
                   Admin Users
                 </CardTitle>
               </CardHeader>
@@ -132,7 +131,7 @@ const AdminPage = () => {
                     <UserCheck className="h-5 w-5 text-secondary" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-fg mt-2">
                   {((adminCount / totalUsers) * 100).toFixed(1)}% of total users
                 </p>
               </CardContent>
@@ -143,7 +142,7 @@ const AdminPage = () => {
             <Card className="bg-card border-accent/10 card-hover overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-accent/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-fg">
                   Active Users
                 </CardTitle>
               </CardHeader>
@@ -154,7 +153,7 @@ const AdminPage = () => {
                     <Activity className="h-5 w-5 text-accent" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-fg mt-2">
                   {((activeUsers / totalUsers) * 100).toFixed(1)}% active in last 30 days
                 </p>
               </CardContent>
@@ -165,7 +164,7 @@ const AdminPage = () => {
             <Card className="bg-card border-primary/10 card-hover overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full"></div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-fg">
                   User Growth
                 </CardTitle>
               </CardHeader>
@@ -176,9 +175,7 @@ const AdminPage = () => {
                     <TrendingUp className="h-5 w-5 text-primary" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Compared to previous month
-                </p>
+                <p className="text-xs text-muted-fg mt-2">Compared to previous month</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -191,7 +188,7 @@ const AdminPage = () => {
           className="mb-6 bg-card/30 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-lg"
         >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-fg" />
             <Input
               type="text"
               placeholder="Search users by name or email..."
@@ -213,7 +210,6 @@ const AdminPage = () => {
           />
         </motion.div>
       </motion.div>
-      <Toaster position="top-right" />
     </div>
   );
 };

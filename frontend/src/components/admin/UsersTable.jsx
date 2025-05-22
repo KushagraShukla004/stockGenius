@@ -8,6 +8,8 @@ import { updateRole, deleteUser } from "@/store/slices/adminSlice";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Edit2, Trash2, AlertCircle, User, Shield } from "lucide-react";
+import { useTheme } from "@/components/theme/theme-provider";
+import { getThemeColors } from "@/theme/antd.config";
 
 const { Option } = Select;
 
@@ -16,6 +18,8 @@ const UsersTable = ({ data = [], loading = false, totalUsers = 0, currentPage = 
   const [editingUserId, setEditingUserId] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null);
+  const { theme } = useTheme();
+  const themeColors = getThemeColors(theme);
 
   const handleRoleChange = (userId, role) => {
     setSelectedRole(role);
@@ -100,7 +104,7 @@ const UsersTable = ({ data = [], loading = false, totalUsers = 0, currentPage = 
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: index * 0.03 }}
-          className="text-muted-foreground"
+          className="text-muted-fg"
         >
           {text}
         </motion.div>
@@ -169,7 +173,7 @@ const UsersTable = ({ data = [], loading = false, totalUsers = 0, currentPage = 
               >
                 <Button
                   onClick={() => setEditingUserId(null)}
-                  className="bg-muted/20 hover:bg-muted/30 text-muted-foreground"
+                  className="bg-muted/20 hover:bg-muted/30 text-muted-fg"
                   size="sm"
                 >
                   <X className="h-4 w-4 mr-1" /> Cancel
@@ -244,14 +248,18 @@ const UsersTable = ({ data = [], loading = false, totalUsers = 0, currentPage = 
           rowKey="_id"
           scroll={{ x: "100%" }}
           size="middle"
-          className="bg-card rounded-xl shadow-xl border border-slate-700/30 overflow-hidden"
+          className={`bg-card rounded-xl shadow-xl overflow-hidden theme-${theme}-table`}
           rowClassName={(record) =>
-            `hover:bg-slate-700/20 transition-all duration-300 ${
-              editingUserId === record._id ? "bg-primary/5" : ""
+            `hover:bg-${
+              themeColors.borderColor
+            }/20 transition-all duration-300 theme-${theme}-row ${
+              editingUserId === record._id
+                ? `bg-primary/5 theme-${theme}-editing-row`
+                : ""
             }`
           }
           onRow={(record) => ({
-            className: "cursor-pointer",
+            className: `cursor-pointer theme-${theme}-table-row`,
           })}
           locale={{
             emptyText: (
@@ -260,8 +268,8 @@ const UsersTable = ({ data = [], loading = false, totalUsers = 0, currentPage = 
                 animate={{ opacity: 1 }}
                 className="py-12 text-center"
               >
-                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">No users found</p>
+                <AlertCircle className="h-12 w-12 text-muted-fg mx-auto mb-4 opacity-50" />
+                <p className="text-muted-fg">No users found</p>
               </motion.div>
             ),
           }}

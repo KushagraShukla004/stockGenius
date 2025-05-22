@@ -22,7 +22,7 @@ const ErrorPage = ({
           }}
           className="w-24 h-24 mx-auto mb-8 rounded-full bg-muted/30 flex items-center justify-center"
         >
-          <LockKeyhole className="w-12 h-12 text-muted-foreground" />
+          <LockKeyhole className="w-12 h-12 text-muted-fg" />
         </motion.div>
 
         {/* Error Code */}
@@ -49,7 +49,7 @@ const ErrorPage = ({
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-muted-foreground mb-8"
+          className="text-muted-fg mb-8"
         >
           {message}
         </motion.p>
